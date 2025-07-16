@@ -1059,8 +1059,10 @@ Stay healthy!
   }
 });
 
+// const path = require("path");
+
 app.get("/", (req, res) => {
-  res.send("🚀 Health360 Backend is running successfully!");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
