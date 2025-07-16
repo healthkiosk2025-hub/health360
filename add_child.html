@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Child</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+        --glass-panel: rgba(172, 172, 172, 0.3);
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .form-box {
+        background: var(--glass-panel);
+        padding: 30px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--accent-gold);
+        font-weight: 600;
+      }
+      .form-label {
+        font-weight: 500;
+        color: white;
+      }
+      .form-control {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .form-control:focus {
+        background: transparent;
+        color: white;
+        border-color: var(--accent-gold);
+        box-shadow: none;
+      }
+      .btn-primary,
+      .btn-success {
+        background: var(--accent-gold);
+        border: none;
+        padding: 10px;
+        font-weight: 500;
+      }
+      .btn-primary:hover,
+      .btn-success:hover {
+        background: #7e591f;
+      }
+      .error-text {
+        color: #ff6b6b;
+        font-size: 0.9em;
+      }
+      #otpSection {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Close Button -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000">
+      <button
+        onclick="goBackToDashboard()"
+        style="background: none; border: none; color: white; font-size: 24px"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="form-box">
+      <h2>Add Child Details</h2>
+      <form id="childForm">
+        <div class="mb-3">
+          <label class="form-label">Child ID</label>
+          <input
+            type="text"
+            class="form-control"
+            id="child_id"
+            readonly
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            placeholder="Enter Your Name"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Aadhaar No</label>
+          <input
+            type="text"
+            class="form-control"
+            id="aadhaar_no"
+            maxlength="12"
+            placeholder="Enter Your Aadhaar No"
+            required
+          />
+          <div id="aadhaarError" class="error-text"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-control" id="dob" required />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Age</label>
+          <input
+            type="number"
+            class="form-control"
+            id="age"
+            placeholder="Enter Your Age"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mother ID</label>
+          <input
+            type="text"
+            class="form-control"
+            id="mother_id"
+            placeholder="Enter Your Mother ID"
+            required
+          />
+        </div>
+        <input type="hidden" id="admin_id" />
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            placeholder="Enter Your E-mail"
+            readonly
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            placeholder="Enter Your Password"
+            required
+          />
+        </div>
+        <button type="submit" id="submitBtn" class="btn btn-primary w-100">
+          Submit
+        </button>
+      </form>
+      <div id="otpSection" style="display: none">
+        <label class="form-label">Enter OTP</label>
+        <input
+          type="text"
+          id="otp_input"
+          class="form-control mb-3"
+          placeholder="Enter OTP to Verify"
+        />
+        <button id="verifyOtpBtn" class="btn btn-success w-100">
+          Verify OTP
+        </button>
+      </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCfpTDLV-bJGvoNrTn7KPgYPzy0Dx4FfU",
+        authDomain: "health-kiosk-f7722.firebaseapp.com",
+        projectId: "health-kiosk-f7722",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      let childDataGlobal = {},
+        childEmail = "",
+        aadhaarUnique = true;
+      const auth = JSON.parse(
+        localStorage.getItem("authData") || sessionStorage.getItem("authData")
+      );
+      if (auth) document.getElementById("admin_id").value = auth.admin_id;
+
+      async function generateNextChildId() {
+        const snapshot = await db.collection("children").get();
+        let max = 0;
+        snapshot.forEach((doc) => {
+          const match = doc.id.match(/^CHD(\d+)$/);
+          if (match) max = Math.max(max, parseInt(match[1]));
+        });
+        const newId = "CHD" + String(max + 1).padStart(3, "0");
+        document.getElementById("child_id").value = newId;
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("editId");
+      if (editId) {
+        document.querySelector("h2").textContent = "Edit Child Details";
+        document.getElementById("submitBtn").textContent = "Update Child";
+        db.collection("children")
+          .doc(editId)
+          .get()
+          .then((doc) => {
+            if (doc.exists) {
+              const data = doc.data();
+              document.getElementById("child_id").value = data.child_id || "";
+              document.getElementById("name").value = data.name || "";
+              document.getElementById("aadhaar_no").value =
+                data.aadhaar_no || "";
+
+              document.getElementById("age").value = data.age || "";
+              document.getElementById("mother_id").value = data.mother_id || "";
+              document.getElementById("admin_id").value = data.admin_id || "";
+              document.getElementById("email").value = data.email || "";
+              document.getElementById("child_id").readOnly = true;
+              document.getElementById("email").readOnly = true;
+
+              if (data.dob) {
+                const parts = data.dob.split("/");
+                if (parts.length === 3) {
+                  const formattedDob = `${parts[2]}-${parts[1].padStart(
+                    2,
+                    "0"
+                  )}-${parts[0].padStart(2, "0")}`;
+                  document.getElementById("dob").value = formattedDob;
+                }
+              }
+            }
+          })
+          .catch((err) => {
+            console.error("Error fetching child for edit:", err);
+          });
+      } else {
+        generateNextChildId();
+      }
+      document
+        .getElementById("mother_id")
+        .addEventListener("blur", async function () {
+          const motherId = this.value.trim();
+          if (!motherId) return;
+          const doc = await db.collection("mothers").doc(motherId).get();
+          if (doc.exists) {
+            document.getElementById("email").value = doc.data().email || "";
+          } else {
+            alert("Mother ID not found");
+            document.getElementById("email").value = "";
+          }
+        });
+      document
+        .getElementById("aadhaar_no")
+        .addEventListener("blur", async function () {
+          const aadhaar = this.value.trim();
+          aadhaarUnique = true;
+          document.getElementById("aadhaarError").innerText = "";
+          if (!/^\d{12}$/.test(aadhaar)) {
+            document.getElementById("aadhaarError").innerText =
+              "Aadhaar must be 12 digits";
+            aadhaarUnique = false;
+            return;
+          }
+          const checks = await Promise.all([
+            db.collection("children").where("aadhaar_no", "==", aadhaar).get(),
+            db.collection("mothers").where("aadhaar_no", "==", aadhaar).get(),
+          ]);
+          if ((!checks[0].empty && !editId) || !checks[1].empty) {
+            document.getElementById("aadhaarError").innerText =
+              "Aadhaar already exists";
+            aadhaarUnique = false;
+          }
+        });
+      document;
+      document
+        .getElementById("childForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const childAge = parseInt(document.getElementById("age").value);
+          if (isNaN(childAge) || childAge < 0 || childAge > 16) {
+            alert(
+              "Please enter a valid Date of Birth. Age must be between 0 and 16 years."
+            );
+            document.getElementById("dob").focus();
+            return;
+          }
+
+          if (!aadhaarUnique) return;
+          // ✅ ADD THIS BLOCK HERE (LMP validation)
+          const motherId = document.getElementById("mother_id").value.trim();
+          if (!motherId) {
+            alert("Please enter Mother ID");
+            return;
+          }
+
+          try {
+            const motherDoc = await db
+              .collection("mothers")
+              .doc(motherId)
+              .get();
+            if (motherDoc.exists) {
+              const lmp = motherDoc.data().delivery_expected;
+              if (lmp) {
+                const childDob = new Date(document.getElementById("dob").value);
+                const deliveryDate = new Date(
+                  lmp.split("/").reverse().join("-")
+                ); // dd/mm/yyyy ➝ yyyy-mm-dd
+                if (childDob < deliveryDate) {
+                  alert(
+                    "Child birth date cannot be before mother’s expected delivery date."
+                  );
+                  return;
+                }
+              }
+            } else {
+              alert("Mother record not found.");
+              return;
+            }
+          } catch (err) {
+            console.error("Error validating LMP:", err);
+            alert("Error checking mother's delivery date.");
+            return;
+          }
+
+          const dobRaw = new Date(document.getElementById("dob").value);
+          const dobFormatted = `${String(dobRaw.getDate()).padStart(
+            2,
+            "0"
+          )}/${String(dobRaw.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}/${dobRaw.getFullYear()}`;
+
+          const data = {
+            child_id: document.getElementById("child_id").value.trim(),
+            name: document.getElementById("name").value.trim(),
+            aadhaar_no: document.getElementById("aadhaar_no").value.trim(),
+            dob: dobFormatted, // ✅ as string
+            age: document.getElementById("age").value.trim(),
+            mother_id: document.getElementById("mother_id").value.trim(),
+            email: document.getElementById("email").value.trim().toLowerCase(),
+            admin_id: document.getElementById("admin_id").value.trim(),
+            password: document.getElementById("password").value,
+          };
+
+          if (!editId) {
+            try {
+              const res = await fetch("/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: data.email,
+                  type: "child",
+                  data,
+                }),
+              });
+              const result = await res.json();
+              if (res.ok) {
+                alert("OTP sent to email");
+                childEmail = data.email;
+                childDataGlobal = data;
+                document.getElementById("otpSection").style.display = "block";
+              } else {
+                alert(result.message || "OTP send failed");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Error sending OTP");
+            }
+          } else {
+            try {
+              const res = await fetch("/update-child", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+              });
+              const result = await res.json();
+              if (res.ok) {
+                alert("Child details updated.");
+                window.location.href = "dashboard.html#children";
+              } else {
+                alert(result.message || "Update failed");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Error updating child details");
+            }
+          }
+        });
+
+      document
+        .getElementById("verifyOtpBtn")
+        .addEventListener("click", async function () {
+          const otp = document.getElementById("otp_input").value.trim();
+          if (!otp) return alert("Enter OTP");
+          try {
+            const res = await fetch("/verify-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: childEmail, otp }),
+            });
+            const result = await res.json();
+            if (res.ok) {
+              alert("Child details added!");
+              window.location.href = "dashboard.html";
+            } else {
+              alert(result.message || "Invalid OTP");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error verifying OTP");
+          }
+        });
+      function goBackToDashboard() {
+        window.location.href = "dashboard.html";
+      }
+
+      document.getElementById("dob").addEventListener("change", function () {
+        const dob = new Date(this.value);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < dob.getDate())
+        ) {
+          age--;
+        }
+
+        document.getElementById("age").value = age;
+      });
+    </script>
+  </body>
+</html>

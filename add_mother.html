@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Mother Details</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+        --glass-panel: #acacac4d;
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .form-box {
+        background: var(--glass-panel);
+        padding: 30px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 900px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--accent-gold);
+        font-weight: 600;
+      }
+      .form-label {
+        font-weight: 500;
+        /* color: white; */
+      }
+      .form-control {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+
+      .form-control:focus {
+        background: transparent;
+        /* color: white; */
+        border-color: var(--accent-gold);
+        box-shadow: none;
+      }
+      select.form-control option {
+        background-color: #1e1e1e; /* dropdown options background */
+        color: white;
+      }
+      .form-control[readonly],
+      .form-control[disabled] {
+        background-color: transparent !important;
+        color: white !important;
+        opacity: 1; /* Optional: remove greying effect */
+      }
+
+      .input-group-text {
+        background: var(--bg-dark);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .btn-primary,
+      .btn-success {
+        background: var(--accent-gold);
+        border: none;
+        font-weight: 500;
+      }
+      .btn-primary:hover,
+      .btn-success:hover {
+        background: #7e591f;
+      }
+      .error-text {
+        color: #ff6b6b;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Close Button -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000">
+      <button
+        onclick="goBackToDashboard()"
+        style="background: none; border: none; color: white; font-size: 24px"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="form-box">
+      <h2>Add Mother Details</h2>
+      <form id="motherForm">
+        <div class="row gx-3">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Mother ID</label
+              ><input
+                type="text"
+                id="mother_id"
+                class="form-control"
+                readonly
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Name</label
+              ><input
+                type="text"
+                id="name"
+                class="form-control"
+                placeholder="Enter Mother Name"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Aadhaar No</label
+              ><input
+                type="text"
+                id="aadhaar_no"
+                class="form-control"
+                maxlength="12"
+                placeholder="Enter Mother Aadhaar No"
+                required
+              />
+              <div id="aadhaarError" class="error-text"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Husband Name</label
+              ><input
+                type="text"
+                id="hus_name"
+                class="form-control"
+                placeholder="Enter Husband Name"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date of Birth</label
+              ><input
+                type="date"
+                id="dob"
+                class="form-control"
+                placeholder="Enter the DOB"
+                required
+              />
+              <span id="dobError" class="error-text"></span>
+              <!-- ⬅️ Add this line -->
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Age</label
+              ><input
+                type="number"
+                id="age"
+                class="form-control"
+                placeholder="Enter Your Age"
+                readonly
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <div class="input-group">
+                <span class="input-group-text">+91</span
+                ><input
+                  type="tel"
+                  id="phone"
+                  class="form-control"
+                  maxlength="10"
+                  pattern="\d{10}"
+                  placeholder="Enter 10-digit No."
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Created Date</label
+              ><input
+                type="date"
+                id="created_date"
+                class="form-control"
+                readonly
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label
+              ><input
+                type="email"
+                id="email"
+                class="form-control"
+                placeholder="Enter Mother E-mail"
+                required
+              />
+              <div id="emailError" class="error-text"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label
+              ><input
+                type="password"
+                id="password"
+                class="form-control"
+                placeholder="Enter Your Password "
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Account Number</label
+              ><input
+                type="text"
+                id="account_no"
+                class="form-control"
+                maxlength="18"
+                placeholder="Enter Your A/C No."
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">IFSC Code</label
+              ><input
+                type="text"
+                id="ifsc_code"
+                class="form-control"
+                placeholder="Enter Your Bank IFSC Code"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Bank Name</label
+              ><input
+                type="text"
+                id="bank_name"
+                class="form-control"
+                placeholder="Enter Your Bank Name"
+                readonly
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Assign Admin</label>
+              <select class="form-control" id="admin_id" required>
+                <option value="">Select Admin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">LMP Date (Last Menstrual Period)</label>
+              <input
+                type="date"
+                id="lmp_date"
+                class="form-control"
+                placeholder="Enter LMP Date"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Expected Delivery Date</label>
+              <input
+                type="text"
+                id="delivery_expected_preview"
+                class="form-control"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-submit px-4" type="submit">
+          Submit
+        </button>
+      </form>
+
+      <div id="otpBox" class="mt-4" style="display: none">
+        <label class="form-label">OTP</label>
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            id="otp"
+            class="form-control"
+            placeholder="Enter OTP"
+          />
+          <button class="btn btn-success" id="verifyOtpBtn">Verify OTP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase + JS -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCfpTDLV-bJGvoNrTn7KPgYPzy0Dx4FfU",
+        authDomain: "health-kiosk-f7722.firebaseapp.com",
+        projectId: "health-kiosk-f7722",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("created_date").value = today;
+
+      const authData = JSON.parse(
+        localStorage.getItem("authData") || sessionStorage.getItem("authData")
+      );
+      const isSuperadmin = authData?.role === "superadmin";
+      const adminIdInput = document.getElementById("admin_id");
+
+      async function populateAdmins(selectedId = "") {
+        if (isSuperadmin) {
+          const admins = await db.collection("admins").get();
+          admins.forEach((doc) => {
+            const opt = document.createElement("option");
+            opt.value = doc.id;
+            opt.textContent = `${doc.id} - ${doc.data().name}`;
+            if (doc.id === selectedId) opt.selected = true;
+            adminIdInput.appendChild(opt);
+          });
+        } else {
+          adminIdInput.innerHTML = `<option value="${authData?.admin_id}" selected>${authData?.admin_id}</option>`;
+          adminIdInput.disabled = true;
+        }
+      }
+
+      document.getElementById("dob").addEventListener("change", function () {
+        const dob = new Date(this.value);
+        const now = new Date();
+        let age = now.getFullYear() - dob.getFullYear();
+        const m = now.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+
+        const ageInput = document.getElementById("age");
+        const dobError = document.getElementById("dobError");
+
+        if (age < 12 || age > 50) {
+          dobError.innerText = "Age must be between 12 and 50 years.";
+          ageInput.value = "";
+        } else {
+          dobError.innerText = "";
+          ageInput.value = age;
+        }
+      });
+
+      async function getNextMotherId() {
+        const snapshot = await db.collection("mothers").get();
+
+        let maxId = 0;
+        snapshot.forEach((doc) => {
+          const num = parseInt(doc.id.replace("MTH", "")) || 0;
+          if (num > maxId) maxId = num;
+        });
+        document.getElementById("mother_id").value =
+          "MTH" + String(maxId + 1).padStart(3, "0");
+      }
+
+      let emailUnique = true;
+      let aadhaarUnique = true;
+      let isEditMode = false;
+      let currentEditId = "";
+
+      document
+        .getElementById("email")
+        .addEventListener("blur", async function () {
+          const email = this.value.trim().toLowerCase();
+          document.getElementById("emailError").innerText = "";
+          emailUnique = true;
+          if (email) {
+            const snap = await db
+              .collection("mothers")
+              .where("email", "==", email)
+              .get();
+            snap.forEach((doc) => {
+              if (!isEditMode || doc.id !== currentEditId) {
+                document.getElementById("emailError").innerText =
+                  "Email already exists.";
+                emailUnique = false;
+              }
+            });
+          }
+        });
+
+      document
+        .getElementById("aadhaar_no")
+        .addEventListener("blur", async function () {
+          const aadhaar_no = this.value.trim();
+          document.getElementById("aadhaarError").innerText = "";
+          aadhaarUnique = true;
+          if (aadhaar_no) {
+            const snap = await db
+              .collection("mothers")
+              .where("aadhaar_no", "==", aadhaar_no)
+              .get();
+            snap.forEach((doc) => {
+              if (!isEditMode || doc.id !== currentEditId) {
+                document.getElementById("aadhaarError").innerText =
+                  "Aadhaar already exists.";
+                aadhaarUnique = false;
+              }
+            });
+          }
+        });
+
+      document
+        .getElementById("ifsc_code")
+        .addEventListener("blur", async function () {
+          const ifsc = this.value.trim().toUpperCase();
+          const bankInput = document.getElementById("bank_name");
+          if (!ifsc) return;
+          try {
+            const res = await fetch(`https://ifsc.razorpay.com/${ifsc}`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            bankInput.value = data.BANK;
+          } catch {
+            bankInput.value = "";
+            alert("Invalid IFSC.");
+          }
+        });
+
+      document
+        .getElementById("motherForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const dobAge = parseInt(document.getElementById("age").value);
+          if (isNaN(dobAge) || dobAge < 12 || dobAge > 50) {
+            alert(
+              "Please enter a valid Date of Birth. Age must be between 12 and 50."
+            );
+            document.getElementById("dob").focus();
+            return;
+          }
+
+          if (!emailUnique || !aadhaarUnique) {
+            if (!emailUnique) document.getElementById("email").focus();
+            else document.getElementById("aadhaar_no").focus();
+            return;
+          }
+          // Calculate delivery expected (LMP + 280 days)
+          const lmpDateRaw = new Date(
+            document.getElementById("lmp_date").value
+          );
+          const deliveryExpectedRaw = new Date(lmpDateRaw);
+          deliveryExpectedRaw.setDate(deliveryExpectedRaw.getDate() + 280);
+
+          // Format as dd/mm/yyyy
+          const delivery_expected = `${String(
+            deliveryExpectedRaw.getDate()
+          ).padStart(2, "0")}/${String(
+            deliveryExpectedRaw.getMonth() + 1
+          ).padStart(2, "0")}/${deliveryExpectedRaw.getFullYear()}`;
+
+          const data = {
+            mother_id: document.getElementById("mother_id").value,
+            name: document.getElementById("name").value,
+            aadhaar_no: document.getElementById("aadhaar_no").value.trim(),
+            hus_name: document.getElementById("hus_name").value,
+            created_date: document.getElementById("created_date").value,
+            dob: document.getElementById("dob").value,
+            age: document.getElementById("age").value,
+            phone: document.getElementById("phone").value.trim(),
+            email: document.getElementById("email").value.trim().toLowerCase(),
+            password: document.getElementById("password").value,
+            account_no: document.getElementById("account_no").value,
+            ifsc_code: document
+              .getElementById("ifsc_code")
+              .value.trim()
+              .toUpperCase(),
+            bank_name: document.getElementById("bank_name").value,
+            admin_id: document.getElementById("admin_id").value,
+            lmp_date: document.getElementById("lmp_date").value, // ✅ Added LMP
+            delivery_expected: delivery_expected,
+          };
+          // Auto-calculate Expected Delivery Date based on LMP
+
+          if (isEditMode) {
+            await fetch("/update-mother", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            alert("Mother record updated.");
+            location.href = "dashboard.html";
+            return;
+          }
+
+          const res = await fetch("/send-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: data.email, type: "mother", data }),
+          });
+
+          const result = await res.json();
+          if (res.ok) {
+            alert("OTP sent");
+            window.sentData = data;
+            document.getElementById("motherForm").style.display = "none";
+            document.getElementById("otpBox").style.display = "block";
+          } else {
+            alert(result.message);
+          }
+        });
+
+      document
+        .getElementById("verifyOtpBtn")
+        .addEventListener("click", async function () {
+          const otp = document.getElementById("otp").value;
+          const email = document
+            .getElementById("email")
+            .value.trim()
+            .toLowerCase();
+
+          const res = await fetch("/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, otp }),
+          });
+
+          const result = await res.json();
+          if (res.ok) {
+            await db
+              .collection("mothers")
+              .doc(window.sentData.mother_id)
+              .set(window.sentData);
+            await fetch("/send-welcome", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: window.sentData.name, email }), // ✅ FIXED
+            });
+
+            alert("Mother data saved.");
+            location.reload();
+          } else {
+            alert(result.message);
+          }
+        });
+
+      async function loadEditData(editId) {
+        const doc = await db.collection("mothers").doc(editId).get();
+        if (!doc.exists) return alert("Mother record not found");
+
+        const data = doc.data();
+        currentEditId = editId;
+        isEditMode = true;
+
+        for (let key in data) {
+          const input = document.getElementById(key);
+          if (input) input.value = data[key];
+          if (key === "lmp_date") {
+            input.dispatchEvent(new Event("change")); // trigger auto-calc
+          }
+        }
+
+        await populateAdmins(data.admin_id);
+        document.getElementById("mother_id").readOnly = true;
+        document.getElementById("password").required = false;
+        document.getElementById("email").disabled = true;
+        document.getElementById("aadhaar_no").disabled = true;
+        document.getElementById("otpBox").style.display = "none";
+      }
+      document
+        .getElementById("lmp_date")
+        .addEventListener("change", function () {
+          const lmp = new Date(this.value);
+          if (!isNaN(lmp)) {
+            const deliveryExpected = new Date(lmp);
+            deliveryExpected.setDate(deliveryExpected.getDate() + 280);
+
+            const formatted = `${String(deliveryExpected.getDate()).padStart(
+              2,
+              "0"
+            )}/${String(deliveryExpected.getMonth() + 1).padStart(
+              2,
+              "0"
+            )}/${deliveryExpected.getFullYear()}`;
+
+            document.getElementById("delivery_expected_preview").value =
+              formatted;
+          } else {
+            document.getElementById("delivery_expected_preview").value = ""; // Clear invalid
+          }
+        });
+
+      window.onload = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get("editId");
+
+        if (editId) {
+          await loadEditData(editId);
+        } else {
+          await getNextMotherId();
+          await populateAdmins();
+        }
+      };
+      function goBackToDashboard() {
+        window.location.href = "dashboard.html#mothers";
+      }
+    </script>
+  </body>
+</html>

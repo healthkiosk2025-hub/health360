@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+        --glass-panel: rgba(172, 172, 172, 0.3);
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .form-box {
+        background: var(--glass-panel);
+        padding: 30px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 700px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--accent-gold);
+        font-weight: 600;
+      }
+      label.form-label {
+        font-weight: 500;
+        color: white;
+      }
+      input.form-control {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      input.form-control:focus {
+        background: transparent;
+        color: white;
+        border-color: var(--accent-gold);
+        box-shadow: none;
+      }
+
+      select.form-control option {
+        background-color: #1e1e1e; /* dropdown options background */
+        color: white;
+      }
+
+      .btn-primary {
+        background: var(--accent-gold);
+        border: none;
+        font-weight: 500;
+      }
+      .btn-primary:hover {
+        background: #7e591f;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Close Button -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000">
+      <button
+        onclick="goBackToDashboard()"
+        style="background: none; border: none; color: white; font-size: 24px"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="form-box">
+      <h2>Add Admin</h2>
+      <form id="adminForm" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="admin_id" class="form-label">Admin ID</label>
+            <input
+              type="text"
+              id="admin_id"
+              class="form-control"
+              readonly
+              required
+              autocomplete="off"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="name" class="form-label">Name</label>
+            <input
+              type="text"
+              id="name"
+              class="form-control"
+              placeholder="Enter Your Name"
+              required
+              autocomplete="off"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="aadhaar_no" class="form-label">Aadhaar Number</label>
+            <input
+              type="text"
+              id="aadhaar_no"
+              class="form-control"
+              maxlength="12"
+              pattern="\d{12}"
+              required
+              autocomplete="off"
+              placeholder="12 digits only"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              placeholder="Enter Your Password"
+              required
+              autocomplete="new-password"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="contact" class="form-label">Contact</label>
+            <input
+              type="tel"
+              id="contact"
+              class="form-control"
+              maxlength="10"
+              pattern="\d{10}"
+              required
+              autocomplete="off"
+              placeholder="Enter 10-digit phone number"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              required
+              autocomplete="off"
+              placeholder="example@gmail.com"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="panchayat_id" class="form-label">Panchayat ID</label>
+            <select
+              id="panchayat_id"
+              class="form-control"
+              style="background-color: #4a4b4a"
+            >
+              <option value="">-- Select Panchayat --</option>
+            </select>
+          </div>
+
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary px-4">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      // Function to fetch next Admin ID from backend API
+      async function getNextAdminId() {
+        try {
+          const res = await fetch(
+            "/get-latest-id?collection=admins&prefix=ADM"
+          );
+          if (!res.ok) throw new Error("Failed to fetch next Admin ID");
+          const data = await res.json();
+          document.getElementById("admin_id").value = data.nextId || "ADM001";
+        } catch (err) {
+          console.error(err);
+          // fallback
+          document.getElementById("admin_id").value = "ADM001";
+        }
+      }
+
+      //load panchyat dropbox
+      async function loadPanchayatOptions() {
+        try {
+          const res = await fetch("/get-panchayats");
+          if (!res.ok) throw new Error("Failed to fetch panchayats");
+          const data = await res.json();
+
+          const select = document.getElementById("panchayat_id");
+          select.innerHTML = '<option value="">-- Select Panchayat --</option>';
+
+          data.forEach((p) => {
+            const option = document.createElement("option");
+            option.value = p.panchayat_id;
+            option.textContent = `${p.panchayat_id} - ${p.panchayat_name}`;
+            select.appendChild(option);
+          });
+        } catch (err) {
+          console.error("Error loading panchayat options:", err);
+          alert("Could not load panchayats");
+        }
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("editId");
+      let isEditMode = false;
+
+      window.onload = async () => {
+        await loadPanchayatOptions();
+
+        if (editId) {
+          isEditMode = true;
+          document.querySelector("h2").textContent = "Edit Admin";
+          document.querySelector(".btn-primary").textContent = "Update Admin";
+
+          try {
+            const res = await fetch(`/get-admin?admin_id=${editId}`);
+            const data = await res.json();
+            if (!res.ok)
+              throw new Error(data.message || "Failed to fetch admin");
+
+            document.getElementById("admin_id").value = data.admin_id;
+            document.getElementById("admin_id").readOnly = true;
+
+            document.getElementById("name").value = data.name || "";
+            document.getElementById("aadhaar_no").value = data.aadhaar_no || "";
+            document.getElementById("aadhaar_no").readOnly = true;
+
+            document.getElementById("contact").value = data.contact || "";
+            document.getElementById("email").value = data.email || "";
+            document.getElementById("panchayat_id").value =
+              data.panchayat_id || "";
+
+            // Leave password empty intentionally for reset if needed
+          } catch (err) {
+            console.error(err);
+            alert("Could not load admin details");
+          }
+        } else {
+          getNextAdminId();
+        }
+      };
+
+      // Form submit handler
+      document
+        .getElementById("adminForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const form = e.target;
+          if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+          }
+
+          const adminData = {
+            admin_id: document.getElementById("admin_id").value.trim(),
+            name: document.getElementById("name").value.trim(),
+            aadhaar_no: document.getElementById("aadhaar_no").value.trim(),
+            password: document.getElementById("password").value,
+            contact: document.getElementById("contact").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            panchayat_id: document.getElementById("panchayat_id").value.trim(),
+          };
+
+          const endpoint = isEditMode ? "/update-admin" : "/add-admin";
+
+          try {
+            const res = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(adminData),
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+              alert(
+                isEditMode
+                  ? "Admin updated successfully"
+                  : "Admin added successfully"
+              );
+              window.location.href = "dashboard.html#adminManagement";
+            } else {
+              alert(result.message || "Operation failed");
+            }
+          } catch (error) {
+            console.error(error);
+            alert("Network or server error");
+          }
+        });
+
+      function goBackToDashboard() {
+        window.location.href = "dashboard.html#adminManagement";
+      }
+    </script>
+  </body>
+</html>

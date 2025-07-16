@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Panchayat</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+        --glass-panel: rgba(172, 172, 172, 0.3);
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .form-box {
+        background: var(--glass-panel);
+        padding: 30px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--accent-gold);
+        font-weight: 600;
+      }
+      .form-label {
+        font-weight: 500;
+        color: white;
+      }
+      .form-control {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .form-control:focus {
+        background: transparent;
+        color: white;
+        border-color: var(--accent-gold);
+        box-shadow: none;
+      }
+      select.form-control option {
+        background-color: #1e1e1e; /* dropdown options background */
+        color: white;
+      }
+      .btn-primary {
+        background: var(--accent-gold);
+        border: none;
+        padding: 10px;
+        font-weight: 500;
+      }
+      .btn-primary:hover {
+        background: #7e591f;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Close Button -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000">
+      <button
+        onclick="goBackToDashboard()"
+        style="background: none; border: none; color: white; font-size: 24px"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="form-box">
+      <h2 id="formTitle">Add Panchayat</h2>
+      <form id="panchayatForm">
+        <div class="mb-3">
+          <label class="form-label">Panchayat ID</label>
+          <input
+            type="text"
+            class="form-control"
+            id="panchayat_id"
+            readonly
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Panchayat Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="panchayat_name"
+            placeholder="Enter Panchayat Name"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Location</label>
+          <input
+            type="text"
+            class="form-control"
+            id="location"
+            placeholder="Enter Panchayat Location"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Assign Admin</label>
+          <select class="form-control" id="admin_id" required>
+            <option value="">-- Select Admin --</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+          Add Panchayat
+        </button>
+      </form>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCfpTDLV-bJGvoNrTn7KPgYPzy0Dx4FfU",
+        authDomain: "health-kiosk-f7722.firebaseapp.com",
+        projectId: "health-kiosk-f7722",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("editId");
+
+      async function generateNextPanchayatId() {
+        const snapshot = await db.collection("panchayats").get();
+        let max = 0;
+        snapshot.forEach((doc) => {
+          const match = doc.id.match(/^PAN(\d+)$/);
+          if (match) max = Math.max(max, parseInt(match[1]));
+        });
+        const newId = "PAN" + String(max + 1).padStart(3, "0");
+        document.getElementById("panchayat_id").value = newId;
+      }
+
+      async function loadAdmins() {
+        const adminSelect = document.getElementById("admin_id");
+        const snapshot = await db.collection("admins").get();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const opt = document.createElement("option");
+          opt.value = doc.id;
+          opt.textContent = `${doc.id} - ${data.name || "Admin"}`;
+          adminSelect.appendChild(opt);
+        });
+      }
+
+      async function loadPanchayatData(id) {
+        try {
+          const doc = await db.collection("panchayats").doc(id).get();
+          if (!doc.exists) return alert("Panchayat not found!");
+
+          const data = doc.data();
+          document.getElementById("panchayat_id").value = id;
+          document.getElementById("panchayat_name").value =
+            data.panchayat_name || "";
+          document.getElementById("location").value = data.location || "";
+          document.getElementById("admin_id").value = data.admin_id || "";
+
+          // Update UI
+          document.getElementById("formTitle").textContent = "Edit Panchayat";
+          document.getElementById("submitBtn").textContent = "Update Panchayat";
+        } catch (err) {
+          console.error("Error loading panchayat:", err);
+          alert("Error loading data.");
+        }
+      }
+
+      // Init
+      loadAdmins().then(() => {
+        if (editId) {
+          loadPanchayatData(editId);
+        } else {
+          generateNextPanchayatId();
+        }
+      });
+
+      document
+        .getElementById("panchayatForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const id = document.getElementById("panchayat_id").value;
+          const data = {
+            panchayat_name: document
+              .getElementById("panchayat_name")
+              .value.trim(),
+            location: document.getElementById("location").value.trim(),
+            admin_id: document.getElementById("admin_id").value,
+            updated_at: new Date(),
+          };
+          if (!editId) {
+            data.created_at = new Date(); // only for new record
+          }
+
+          try {
+            const res = await fetch("/add-panchayat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...data, panchayat_id: id }),
+            });
+            const result = await res.json();
+            if (res.ok) {
+              alert(
+                editId
+                  ? "Panchayat updated successfully!"
+                  : "Panchayat added successfully!"
+              );
+              window.location.href = "dashboard.html#panchayats";
+            } else {
+              alert(result.message || "Operation failed.");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error saving panchayat.");
+          }
+        });
+      function goBackToDashboard() {
+        window.location.href = "dashboard.html#panchayatManagement";
+      }
+    </script>
+  </body>
+</html>

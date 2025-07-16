@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Child Health Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f3f4f6;
+        padding: 20px;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 20px;
+      }
+      .chart-section {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Child Health Report</h1>
+
+    <div class="chart-section">
+      <h3>Height (cm)</h3>
+      <div class="chart-container"><canvas id="heightChart"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>Weight (kg)</h3>
+      <div class="chart-container"><canvas id="weightChart"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>SpO2 (%)</h3>
+      <div class="chart-container"><canvas id="spo2Chart"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>Pulse (BPM)</h3>
+      <div class="chart-container"><canvas id="pulseChart"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>Temperature (°C)</h3>
+      <div class="chart-container"><canvas id="tempChart"></canvas></div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        query,
+        where,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCfpTDLV-bJGvoNrTn7KPgYPzy0Dx4FfU",
+        authDomain: "health-kiosk-f7722.firebaseapp.com",
+        projectId: "health-kiosk-f7722",
+        storageBucket: "health-kiosk-f7722.appspot.com",
+        messagingSenderId: "573510096903",
+        appId: "1:573510096903:web:684402257b3a677c32f2a2",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const authData =
+        JSON.parse(localStorage.getItem("authData")) ||
+        JSON.parse(sessionStorage.getItem("authData"));
+
+      if (!authData) {
+        alert("Unauthorized access.");
+        window.location.href = "index.html";
+      }
+
+      const childId = new URLSearchParams(location.search).get("id");
+      if (!childId) {
+        alert("No child ID found.");
+        window.location.href = "dashboard.html";
+      }
+
+      async function loadHealthData() {
+        const childSnap = await getDocs(
+          query(collection(db, "children"), where("child_id", "==", childId))
+        );
+
+        if (childSnap.empty) {
+          alert("Child not found.");
+          return;
+        }
+
+        const childDoc = childSnap.docs[0];
+        const childData = childDoc.data();
+        const childDocId = childDoc.id;
+
+        if (
+          authData.role === "admin" &&
+          authData.admin_id !== childData.admin_id
+        ) {
+          alert("Access denied. Not your assigned record.");
+          window.location.href = "dashboard.html";
+        }
+
+        const healthSnap = await getDocs(
+          collection(db, "children", childDocId, "health_data")
+        );
+
+        const records = [];
+        healthSnap.forEach((doc) => {
+          records.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (records.length === 0) {
+          alert("No health records found.");
+          return;
+        }
+
+        renderCharts(records);
+      }
+
+      function getChartOptions(length) {
+        return {
+          type: "line",
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: { display: true, text: "Date" },
+                ticks: {
+                  autoSkip: false,
+                  maxRotation: 45,
+                  minRotation: 45,
+                },
+                min: 0,
+                max: Math.min(length - 1, 9),
+              },
+              y: {
+                title: { display: true, text: "Value" },
+              },
+            },
+            plugins: {
+              legend: { display: true },
+              zoom: {
+                pan: { enabled: true, mode: "x" },
+                zoom: {
+                  wheel: { enabled: true },
+                  pinch: { enabled: true },
+                  mode: "x",
+                },
+              },
+            },
+          },
+        };
+      }
+
+      function renderCharts(records) {
+        const labels = records.map((r) => r.id);
+        const height = records.map((r) => parseFloat(r.height || 0));
+        const weight = records.map((r) => parseFloat(r.weight || 0));
+        const spo2 = records.map((r) => parseFloat(r.spo2 || 0));
+        const pulse = records.map((r) => parseFloat(r.pulse || 0));
+        const temp = records.map((r) => parseFloat(r.temperature || 0));
+
+        const count = records.length;
+
+        new Chart(document.getElementById("heightChart"), {
+          ...getChartOptions(count),
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Height (cm)",
+                data: height,
+                borderColor: "#3b82f6",
+                fill: false,
+              },
+            ],
+          },
+        });
+
+        new Chart(document.getElementById("weightChart"), {
+          ...getChartOptions(count),
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Weight (kg)",
+                data: weight,
+                borderColor: "#6366f1",
+                fill: false,
+              },
+            ],
+          },
+        });
+
+        new Chart(document.getElementById("spo2Chart"), {
+          ...getChartOptions(count),
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "SpO2 (%)",
+                data: spo2,
+                borderColor: "#06b6d4",
+                fill: false,
+              },
+            ],
+          },
+        });
+
+        new Chart(document.getElementById("pulseChart"), {
+          ...getChartOptions(count),
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Pulse (BPM)",
+                data: pulse,
+                borderColor: "#f43f5e",
+                fill: false,
+              },
+            ],
+          },
+        });
+
+        new Chart(document.getElementById("tempChart"), {
+          ...getChartOptions(count),
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Temperature (°C)",
+                data: temp,
+                borderColor: "#ef4444",
+                fill: false,
+              },
+            ],
+          },
+        });
+      }
+
+      loadHealthData();
+    </script>
+  </body>
+</html>

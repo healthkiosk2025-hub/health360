@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Mother</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #202120;
+        color: white;
+        padding: 2rem;
+      }
+      .detail-box {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #9a6d31;
+        border-radius: 10px;
+        padding: 2rem;
+      }
+      .detail-box h3 {
+        color: #9a6d31;
+        margin-bottom: 1.5rem;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .detail-item {
+        padding: 1rem;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid #9a6d31;
+        border-radius: 8px;
+      }
+      .detail-item strong {
+        color: #9a6d31;
+      }
+      .form-label {
+        color: #9a6d31;
+      }
+      #viewReportBtn {
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Mother Details -->
+      <div class="detail-box">
+        <h3 id="toggleDetails">
+          <span>Mother Details</span>
+          <span id="arrowDetails">▼</span>
+        </h3>
+        <div id="motherDetailGrid" class="detail-grid"></div>
+      </div>
+      <!-- Health Data Section -->
+      <div class="detail-box mt-4">
+        <h3 id="toggleHealth">
+          <span>Health Data</span>
+          <span id="arrowHealth">▼</span>
+        </h3>
+        <div id="healthDataSection" style="display: none">
+          <div class="text-end mb-2" id="reportButtonDiv" style="display: none">
+            <a
+              id="viewReportLink"
+              href="#"
+              class="btn btn-outline-warning btn-sm"
+            >
+              <i class="bi bi-eye"></i> View Report
+            </a>
+          </div>
+          <div
+            id="manualHbSection"
+            style="
+              margin-top: 15px;
+              padding: 10px;
+              border: 1px solid #444;
+              border-radius: 8px;
+            "
+          >
+            <h4 style="color: orange">Add Hemoglobin Here</h4>
+            <label style="color: white">Hemoglobin (g/dL):</label><br />
+            <input
+              type="number"
+              id="hbInput"
+              step="0.1"
+              min="0"
+              style="padding: 6px; width: 150px; margin-top: 4px"
+            />
+            <button
+              onclick="submitHemoglobin()"
+              style="
+                margin-left: 10px;
+                padding: 6px 12px;
+                background-color: orange;
+                color: black;
+                border: none;
+                border-radius: 5px;
+              "
+            >
+              Submit
+            </button>
+          </div>
+
+          <div id="healthDataGrid" class="detail-grid"></div>
+        </div>
+      </div>
+
+      <!-- Vaccination Section -->
+      <div class="detail-box mt-4">
+        <h3 id="toggleVaccination">
+          <span>Vaccination Details</span>
+          <span id="arrowVaccination">▲</span>
+        </h3>
+
+        <div id="vaccinationSection" style="display: none">
+          <div class="mb-3">
+            <strong style="color: #ccc">💡 TD1 Recommended Date:</strong>
+            <span id="awarenessDate" style="color: lightgreen"></span>
+          </div>
+
+          <!-- TD1 -->
+          <form id="vaccineForm">
+            <div class="mb-3">
+              <label class="form-label" for="td1">TD1 Vaccination Status</label>
+              <select id="td1" class="form-select" required>
+                <option value="">-- Select --</option>
+                <option value="Done">Done</option>
+                <option value="Not Done">Not Done</option>
+              </select>
+            </div>
+            <div id="td1DateContainer" class="mb-3 d-none">
+              <label for="td1Date" class="form-label">TD1 Done Date</label>
+              <input type="date" id="td1Date" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-warning">Save TD1</button>
+            <div id="vaccineMessage" class="mt-2"></div>
+          </form>
+
+          <hr />
+          <div id="td2DueDiv" class="mb-3" style="display: none">
+            <strong style="color: #ccc">📅 TD2 Recommended Date:</strong>
+            <span id="td2DueDate" style="color: lightblue"></span>
+          </div>
+
+          <!-- TD2 -->
+          <form id="td2Form" style="display: none">
+            <div class="mb-3">
+              <label class="form-label" for="td2">TD2 Vaccination Status</label>
+              <select id="td2" class="form-select" required>
+                <option value="">-- Select --</option>
+                <option value="Done">Done</option>
+                <option value="Not Done">Not Done</option>
+              </select>
+            </div>
+            <div id="td2DateContainer" class="mb-3 d-none">
+              <label for="td2Date" class="form-label">TD2 Done Date</label>
+              <input type="date" id="td2Date" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-warning">Save TD2</button>
+            <div id="td2Message" class="mt-2"></div>
+          </form>
+
+          <hr />
+
+          <!-- TD3 -->
+          <div id="tdBoosterAwareness" class="mt-4" style="display: none">
+            <strong style="color: #ccc">💉 TD-Booster Recommended Date:</strong>
+            <p style="color: lightpink">
+              TD3 will be required only during your next pregnancy. Please
+              consult your health worker again when next pregnancy is confirmed.
+            </p>
+          </div>
+          <form id="tdBoosterForm" style="display: none">
+            <div class="mb-3">
+              <label class="form-label" for="td3"
+                >TD-Booster Vaccination Status</label
+              >
+              <select id="tdBooster" class="form-select" required>
+                <option value="">-- Select --</option>
+                <option value="Done">Done</option>
+                <option value="Not Done">Not Done</option>
+              </select>
+            </div>
+            <div id="tdBoosterDateContainer" class="mb-3 d-none">
+              <label for="tdBooster" class="form-label"
+                >TD-Booster Done Date</label
+              >
+              <input type="date" id="tdBoosterDate" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-warning">
+              Save TD-Booster
+            </button>
+            <div id="tdBoosterMessage" class="mt-2"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCfpTDLV-bJGvoNrTn7KPgYPzy0Dx4FfU",
+        authDomain: "health-kiosk-f7722.firebaseapp.com",
+        // databaseURL: "https://health-kiosk-f7722-default-rtdb.firebaseio.com",
+        projectId: "health-kiosk-f7722",
+        storageBucket: "health-kiosk-f7722.firebasestorage.app",
+        messagingSenderId: "573510096903",
+        appId: "1:573510096903:web:684402257b3a677c32f2a2",
+      };
+
+      // Initialize Firebase
+      //   const app = initializeApp(firebaseConfig);
+      //   const analytics = getAnalytics(app);
+      //   Note: This option uses the modular JavaScript SDK, which provides a reduced SDK size.
+
+      //   Learn more about Firebase for web: Get started, Web SDK API Reference, Samples
+
+      //   Vertex AI in Firebase is now Firebase AI Logic and it gives you access to the Gemini Developer API
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+    </script>
+    <script>
+      const motherId = new URLSearchParams(window.location.search).get("id");
+
+      const td1 = document.getElementById("td1");
+      const td1Date = document.getElementById("td1Date");
+      const td1DateContainer = document.getElementById("td1DateContainer");
+
+      const td2 = document.getElementById("td2");
+      const td2Date = document.getElementById("td2Date");
+      const td2DateContainer = document.getElementById("td2DateContainer");
+
+      const tdBooster = document.getElementById("tdBooster");
+      const tdBoosterDate = document.getElementById("tdBoosterDate");
+      const tdBoosterDateContainer = document.getElementById(
+        "tdBoosterDateContainer"
+      );
+
+      const td2DueDiv = document.getElementById("td2DueDiv");
+      const td2DueDate = document.getElementById("td2DueDate");
+      const tdBoosterAwareness = document.getElementById("tdBoosterAwareness");
+      const awarenessDisplay = document.getElementById("awarenessDate");
+
+      const motherDetailGrid = document.getElementById("motherDetailGrid");
+      const vaccinationSection = document.getElementById("vaccinationSection");
+      const arrowDetails = document.getElementById("arrowDetails");
+      const arrowVaccination = document.getElementById("arrowVaccination");
+
+      const td2Form = document.getElementById("td2Form");
+      const tdBoosterForm = document.getElementById("tdBoosterForm");
+
+      let td1SavedDate = null;
+      let td2SavedDate = null;
+
+      function formatDate(d) {
+        const date = new Date(d);
+        return `${String(date.getDate()).padStart(2, "0")}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-${date.getFullYear()}`;
+      }
+
+      async function fetchMotherDetails() {
+        const res = await fetch("/get-mother?id=" + motherId);
+        const data = await res.json();
+
+        motherDetailGrid.innerHTML = Object.entries(data)
+          .filter(([k]) => !["created_at", "updated_at"].includes(k))
+          .map(
+            ([k, v]) => `
+                      <div class="detail-item">
+                        <strong>${k
+                          .replace(/_/g, " ")
+                          .toUpperCase()}:</strong><br/>${v}
+                      </div>
+                    `
+          )
+          .join("");
+
+        if (data.lmp_date) {
+          const lmp = new Date(data.lmp_date);
+          lmp.setDate(lmp.getDate() + 7);
+          awarenessDisplay.textContent = formatDate(lmp);
+        } else {
+          awarenessDisplay.textContent = "Not available";
+        }
+      }
+      async function fetchHealthData() {
+        const healthDataGrid = document.getElementById("healthDataGrid");
+        healthDataGrid.innerHTML = "<div class='text-muted'>Loading...</div>";
+
+        try {
+          console.log("Fetching health data for:", motherId); // 👈 Debug line
+
+          const snapshot = await db
+            .collection("mothers")
+            .doc(motherId)
+            .collection("health_data")
+            .get();
+          if (snapshot.empty) {
+            healthDataGrid.innerHTML =
+              "<div class='text-muted'>No health records found.</div>";
+            document.getElementById("reportButtonDiv").style.display = "none"; // ✅ Hide button if no data
+            return;
+          }
+
+          // ✅ If data exists:
+          document.getElementById("reportButtonDiv").style.display = "block";
+          document.getElementById("viewReportLink").href =
+            "/view_report.html?id=" + motherId;
+
+          let html = "";
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const date = doc.id;
+
+            html += `
+              <div class="detail-item" style="border-bottom:1px solid #888;padding-bottom:8px;margin-bottom:12px">
+                <strong>Date: ${date}</strong><br/>
+                ${Object.entries(data)
+                  .map(
+                    ([key, value]) =>
+                      `<div><strong>${key
+                        .replace(/_/g, " ")
+                        .toUpperCase()}:</strong> ${value}</div>`
+                  )
+                  .join("")}
+              </div>
+            `;
+          });
+
+          healthDataGrid.innerHTML = html;
+        } catch (err) {
+          console.error("Error fetching health data:", err); // 👈 Error log
+          healthDataGrid.innerHTML =
+            "<div class='text-danger'>Error loading health data.</div>";
+        }
+      }
+
+      async function loadVaccination(dose, select, input, container) {
+        const res = await fetch(
+          `/get-vaccine?motherId=${motherId}&dose=${dose}`
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.status === true) {
+          select.value = "Done";
+          container.classList.remove("d-none");
+          if (data.date_schedule) input.value = data.date_schedule;
+
+          if (dose === "td1") {
+            td1SavedDate = new Date(data.date_schedule);
+            td2Form.style.display = "block";
+            const d = new Date(data.date_schedule);
+            d.setDate(d.getDate() + 28);
+            td2DueDate.textContent = formatDate(d);
+            td2DueDiv.style.display = "block";
+          }
+
+          if (dose === "td2") {
+            td2SavedDate = new Date(data.date_schedule);
+          }
+        } else {
+          select.value = "Not Done";
+          container.classList.add("d-none");
+        }
+
+        checkBoosterAwareness();
+      }
+
+      function checkBoosterAwareness() {
+        const td2Visible = td2Form.style.display !== "none";
+        const tdBoosterVisible = tdBoosterForm.style.display === "block";
+
+        if (
+          td1.value === "Done" &&
+          td2.value === "Done" &&
+          td2Visible &&
+          tdBoosterVisible
+        ) {
+          tdBoosterAwareness.style.display = "block";
+        } else {
+          tdBoosterAwareness.style.display = "none";
+        }
+      }
+
+      function handleChange(select, container, input, dose) {
+        if (select.value === "Done") {
+          container.classList.remove("d-none");
+          input.value ||= new Date().toISOString().split("T")[0];
+        } else {
+          container.classList.add("d-none");
+          input.value = "";
+          if (dose === "td1") {
+            td2Form.style.display = "none";
+            td2DueDiv.style.display = "none";
+          }
+        }
+        checkBoosterAwareness();
+      }
+
+      async function submitForm(e, dose, select, input, msgId) {
+        e.preventDefault();
+        const status = select.value === "Done";
+        const dateVal = input.value || null;
+
+        if (status && !dateVal) {
+          document.getElementById(
+            msgId
+          ).innerHTML = `<span style="color: red;">❌ Please enter date.</span>`;
+          return;
+        }
+
+        // TD2 Validation (must be at least 28 days after TD1)
+        if (dose === "td2" && td1SavedDate) {
+          const td2Date = new Date(dateVal);
+          const minTD2 = new Date(td1SavedDate);
+          minTD2.setDate(minTD2.getDate() + 28);
+          if (td2Date < minTD2) {
+            document.getElementById(
+              msgId
+            ).innerHTML = `<span style="color: red;">❌ TD2 must be at least 28 days after TD1 (${formatDate(
+              minTD2
+            )}).</span>`;
+            return;
+          }
+        }
+
+        // TD Booster Validation (must be at least 180 days after TD2)
+        if (dose === "tdBooster" && td2SavedDate) {
+          const boosterDate = new Date(dateVal);
+          const minBooster = new Date(td2SavedDate);
+          minBooster.setDate(minBooster.getDate() + 180);
+          if (boosterDate < minBooster) {
+            document.getElementById(
+              msgId
+            ).innerHTML = `<span style="color: red;">❌ Booster must be at least 6 months after TD2 (${formatDate(
+              minBooster
+            )}).</span>`;
+            return;
+          }
+        }
+
+        const res = await fetch(
+          `/update-vaccine?motherId=${motherId}&dose=${dose}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status, date_schedule: dateVal }),
+          }
+        );
+
+        const result = await res.json();
+        document.getElementById(msgId).innerHTML = result.success
+          ? `<span style="color: lightgreen;">✅ ${result.message}</span>`
+          : `<span style="color: red;">❌ ${result.message}</span>`;
+
+        if (result.success && status) {
+          if (dose === "td1") {
+            td2Form.style.display = "block";
+            const d = new Date(dateVal);
+            d.setDate(d.getDate() + 28);
+            td2DueDate.textContent = formatDate(d);
+            td2DueDiv.style.display = "block";
+          }
+          if (dose === "td2") {
+            tdBoosterForm.style.display = "block";
+            const res3 = await fetch(
+              `/get-vaccine?motherId=${motherId}&dose=tdBooster`
+            );
+            if (res3.ok) {
+              const data3 = await res3.json();
+              if (data3.status === true) {
+                tdBooster.value = "Done";
+                tdBoosterDateContainer.classList.remove("d-none");
+                if (data3.date_schedule)
+                  tdBoosterDate.value = data3.date_schedule;
+              } else {
+                tdBooster.value = "Not Done";
+                tdBoosterDateContainer.classList.add("d-none");
+              }
+            }
+          }
+        }
+
+        checkBoosterAwareness();
+      }
+
+      document.getElementById("toggleDetails").onclick = () => {
+        const isVisible = motherDetailGrid.style.display !== "none";
+        motherDetailGrid.style.display = isVisible ? "none" : "grid";
+        arrowDetails.textContent = isVisible ? "▼" : "▲";
+      };
+
+      const healthDataSection = document.getElementById("healthDataSection");
+      const viewReportBtn = document.getElementById("viewReportBtn");
+
+      document.getElementById("toggleHealth").onclick = () => {
+        const isVisible = healthDataSection.style.display !== "none";
+        healthDataSection.style.display = isVisible ? "none" : "block";
+        arrowHealth.textContent = isVisible ? "▼" : "▲";
+
+        const viewReportBtn = document.getElementById("viewReportBtn");
+        if (viewReportBtn) {
+          viewReportBtn.href = `view_report.html?id=${motherId}`;
+        }
+      };
+
+      document.getElementById("toggleVaccination").onclick = () => {
+        const isVisible = vaccinationSection.style.display !== "none";
+        vaccinationSection.style.display = isVisible ? "none" : "block";
+        arrowVaccination.textContent = isVisible ? "▼" : "▲";
+      };
+
+      // Init
+      // Initial Setup
+      motherDetailGrid.style.display = "none";
+      arrowDetails.textContent = "▼";
+
+      const healthDataGrid = document.getElementById("healthDataGrid");
+      healthDataGrid.style.display = "none";
+      arrowHealth.textContent = "▼";
+
+      vaccinationSection.style.display = "none";
+      arrowVaccination.textContent = "▼";
+
+      td2Form.style.display = "none";
+      tdBoosterForm.style.display = "none";
+
+      td1.onchange = () => handleChange(td1, td1DateContainer, td1Date, "td1");
+      td2.onchange = () => handleChange(td2, td2DateContainer, td2Date, "td2");
+      tdBooster.onchange = () =>
+        handleChange(
+          tdBooster,
+          tdBoosterDateContainer,
+          tdBoosterDate,
+          "tdBooster"
+        );
+
+      document.getElementById("vaccineForm").onsubmit = (e) =>
+        submitForm(e, "td1", td1, td1Date, "vaccineMessage");
+      document.getElementById("td2Form").onsubmit = (e) =>
+        submitForm(e, "td2", td2, td2Date, "td2Message");
+      document.getElementById("tdBoosterForm").onsubmit = (e) =>
+        submitForm(
+          e,
+          "tdBooster",
+          tdBooster,
+          tdBoosterDate,
+          "tdBoosterMessage"
+        );
+
+      fetchMotherDetails();
+      fetchHealthData();
+      loadVaccination("td1", td1, td1Date, td1DateContainer);
+      loadVaccination("td2", td2, td2Date, td2DateContainer);
+
+      async function submitHemoglobin() {
+        const hemoglobin = parseFloat(document.getElementById("hbInput").value);
+        if (!hemoglobin || hemoglobin <= 0) {
+          alert("Please enter a valid hemoglobin value.");
+          return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const motherId = urlParams.get("id"); // e.g., MTH001
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+        try {
+          const docRef = firebase
+            .firestore()
+            .collection("mothers")
+            .doc(motherId)
+            .collection("health_data")
+            .doc(today);
+
+          await docRef.set({ hemoglobin: hemoglobin }, { merge: true });
+
+          alert("✅ Hemoglobin saved successfully.");
+          document.getElementById("hbInput").value = ""; // clear input
+        } catch (error) {
+          console.error("Error adding hemoglobin:", error);
+          alert("❌ Failed to save hemoglobin.");
+        }
+      }
+      // 🧠 Collect health data from today's do
+    </script>
+  </body>
+</html>
