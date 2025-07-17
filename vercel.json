@@ -13,12 +13,12 @@
     }
   ],
   "env": {
-    "DB_HOST": "@db_host",
-    "DB_USER": "@db_user",
-    "DB_PASSWORD": "@db_password", 
-    "DB_DATABASE": "@db_database", 
-    "JWT_SECRET": "@jwt_secret",
-    "NODEMAILER_USER": "@nodemailer_user",
-    "NODEMAILER_PASS": "@nodemailer_pass"
+    "DB_HOST": "srv531.hstgr.io",
+    "DB_USER": "u109550565_health360",
+    "DB_PASSWORD": "Kiosk@2025", 
+    "DB_DATABASE": "u109550565_health360", 
+    "JWT_SECRET": "health360-secret-key",
+    "NODEMAILER_USER": "health.kiosk2025@gmail.com",
+    "NODEMAILER_PASS": "hovfnqtovqqfmexm"
   }
 }
