@@ -1,25 +1,24 @@
-// vercel.json
 {
   "version": 2,
   "builds": [
     {
-      "src": "app.js", // Your main Node.js entry file
+      "src": "app.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "app.js" // Direct all requests to your app.js
+      "dest": "app.js"
     }
   ],
   "env": {
-    "DB_HOST": "@db_host", // Vercel Secret for your DB host
-    "DB_USER": "@db_user", // Vercel Secret for your DB user
-    "DB_PASSWORD": "@db_password", // Vercel Secret for your DB password
-    "DB_DATABASE": "@db_database", // Vercel Secret for your DB database
-    "JWT_SECRET": "@jwt_secret", // Vercel Secret for your JWT secret
-    "NODEMAILER_USER": "@nodemailer_user", // Vercel Secret for Nodemailer user
-    "NODEMAILER_PASS": "@nodemailer_pass" // Vercel Secret for Nodemailer pass
+    "DB_HOST": "@db_host",
+    "DB_USER": "@db_user",
+    "DB_PASSWORD": "@db_password", 
+    "DB_DATABASE": "@db_database", 
+    "JWT_SECRET": "@jwt_secret",
+    "NODEMAILER_USER": "@nodemailer_user",
+    "NODEMAILER_PASS": "@nodemailer_pass"
   }
 }
