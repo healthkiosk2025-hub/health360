@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Child</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+        --glass-panel: rgba(172, 172, 172, 0.3);
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .form-box {
+        background: var(--glass-panel);
+        padding: 30px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--accent-gold);
+        font-weight: 600;
+      }
+      .form-label {
+        font-weight: 500;
+        color: white;
+      }
+      .form-control {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .form-control:focus {
+        background: transparent;
+        color: white;
+        border-color: var(--accent-gold);
+        box-shadow: none;
+      }
+      .btn-primary,
+      .btn-success {
+        background: var(--accent-gold);
+        border: none;
+        padding: 10px;
+        font-weight: 500;
+      }
+      .btn-primary:hover,
+      .btn-success:hover {
+        background: #7e591f;
+      }
+      .error-text {
+        color: #ff6b6b;
+        font-size: 0.9em;
+      }
+      #otpSection {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Close Button -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000">
+      <button
+        onclick="goBackToDashboard()"
+        style="background: none; border: none; color: white; font-size: 24px"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="form-box">
+      <h2>Add Child Details</h2>
+      <form id="childForm">
+        <div class="mb-3">
+          <label class="form-label">Child ID</label>
+          <input
+            type="text"
+            class="form-control"
+            id="child_id"
+            readonly
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            placeholder="Enter Your Name"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Aadhaar No</label>
+          <input
+            type="text"
+            class="form-control"
+            id="aadhaar_no"
+            maxlength="12"
+            placeholder="Enter Your Aadhaar No"
+            required
+          />
+          <div id="aadhaarError" class="error-text"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-control" id="dob" required />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Age</label>
+          <input
+            type="number"
+            class="form-control"
+            id="age"
+            placeholder="Enter Your Age"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mother ID</label>
+          <input
+            type="text"
+            class="form-control"
+            id="mother_id"
+            placeholder="Enter Your Mother ID"
+            required
+          />
+        </div>
+        <input type="hidden" id="admin_id" />
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            placeholder="Enter Your E-mail"
+            readonly
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            placeholder="Enter Your Password"
+            required
+          />
+        </div>
+        <button type="submit" id="submitBtn" class="btn btn-primary w-100">
+          Submit
+        </button>
+      </form>
+      <div id="otpSection" style="display: none">
+        <label class="form-label">Enter OTP</label>
+        <input
+          type="text"
+          id="otp_input"
+          class="form-control mb-3"
+          placeholder="Enter OTP to Verify"
+        />
+        <button id="verifyOtpBtn" class="btn btn-success w-100">
+          Verify OTP
+        </button>
+      </div>
+    </div>
+    <script>
+      let childDataGlobal = {};
+      let childEmail = "";
+      let aadhaarUnique = true;
+
+      const auth = JSON.parse(
+        localStorage.getItem("authData") || sessionStorage.getItem("authData")
+      );
+      if (auth) document.getElementById("admin_id").value = auth.admin_id;
+
+      // Generate Child ID from backend
+      async function generateNextChildId() {
+        try {
+          const res = await fetch("/get-latest-id?collection=children&prefix=CHD");
+          const data = await res.json();
+          if (data.nextId) {
+            document.getElementById("child_id").value = data.nextId;
+          }
+        } catch (err) {
+          console.error("Error fetching child ID:", err);
+        }
+      }
+
+      // Pre-fill in edit mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("editId");
+      if (editId) {
+        document.querySelector("h2").textContent = "Edit Child Details";
+        document.getElementById("submitBtn").textContent = "Update Child";
+        fetch(`/get-child?id=${editId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("child_id").value = data.child_id || "";
+            document.getElementById("name").value = data.name || "";
+            document.getElementById("aadhaar_no").value = data.aadhaar_no || "";
+            document.getElementById("dob").value = data.dob || "";
+            document.getElementById("age").value = data.age || "";
+            document.getElementById("mother_id").value = data.mother_id || "";
+            document.getElementById("admin_id").value = data.admin_id || "";
+            document.getElementById("email").value = data.email || "";
+            document.getElementById("child_id").readOnly = true;
+            document.getElementById("email").readOnly = true;
+          });
+      } else {
+        generateNextChildId();
+      }
+
+      // Load email from mother
+      document.getElementById("mother_id").addEventListener("blur", async function () {
+        const motherId = this.value.trim();
+        if (!motherId) return;
+
+        try {
+          const res = await fetch(`/get-mother?id=${motherId}`);
+          const data = await res.json();
+          if (res.ok) {
+            document.getElementById("email").value = data.email || "";
+          } else {
+            alert("Mother ID not found");
+            document.getElementById("email").value = "";
+          }
+        } catch (err) {
+          console.error("Error fetching mother:", err);
+        }
+      });
+
+      // Aadhaar uniqueness check (basic frontend only)
+      document.getElementById("aadhaar_no").addEventListener("blur", async function () {
+        const aadhaar = this.value.trim();
+        aadhaarUnique = true;
+        const aadhaarError = document.getElementById("aadhaarError");
+        aadhaarError.innerText = "";
+
+        if (!/^\d{12}$/.test(aadhaar)) {
+          aadhaarError.innerText = "Aadhaar must be 12 digits";
+          aadhaarUnique = false;
+        }
+      });
+
+      // Form submission
+      document.getElementById("childForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const age = parseInt(document.getElementById("age").value);
+        if (isNaN(age) || age < 0 || age > 16) {
+          alert("Age must be between 0 and 16.");
+          return;
+        }
+
+        if (!aadhaarUnique) return;
+
+        const dobRaw = new Date(document.getElementById("dob").value);
+        const dobFormatted = `${String(dobRaw.getDate()).padStart(2, "0")}/${String(dobRaw.getMonth() + 1).padStart(2, "0")}/${dobRaw.getFullYear()}`;
+
+        const data = {
+          child_id: document.getElementById("child_id").value.trim(),
+          name: document.getElementById("name").value.trim(),
+          aadhaar_no: document.getElementById("aadhaar_no").value.trim(),
+          dob: dobFormatted,
+          age: document.getElementById("age").value.trim(),
+          mother_id: document.getElementById("mother_id").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          admin_id: document.getElementById("admin_id").value.trim(),
+          password: document.getElementById("password").value.trim(),
+        };
+
+        if (!editId) {
+          try {
+            const res = await fetch("/send-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: data.email, type: "child", data }),
+            });
+            const result = await res.json();
+            if (res.ok) {
+              alert("OTP sent to email");
+              childEmail = data.email;
+              childDataGlobal = data;
+              document.getElementById("otpSection").style.display = "block";
+            } else {
+              alert(result.message || "Failed to send OTP");
+            }
+          } catch (err) {
+            console.error("OTP error:", err);
+          }
+        } else {
+          try {
+            const res = await fetch("/update-child", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            const result = await res.json();
+            if (res.ok) {
+              alert("Child updated");
+              window.location.href = "dashboard.html#children";
+            } else {
+              alert(result.message || "Update failed");
+            }
+          } catch (err) {
+            console.error("Update error:", err);
+          }
+        }
+      });
+
+      // OTP Verification
+      document.getElementById("verifyOtpBtn").addEventListener("click", async function () {
+        const otp = document.getElementById("otp_input").value.trim();
+        if (!otp) return alert("Enter OTP");
+
+        try {
+          const res = await fetch("/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: childEmail, otp }),
+          });
+          const result = await res.json();
+          if (res.ok) {
+            alert("Child added successfully!");
+            window.location.href = "dashboard.html#children";
+          } else {
+            alert(result.message || "OTP verification failed");
+          }
+        } catch (err) {
+          console.error("OTP verify error:", err);
+        }
+      });
+
+      // Age auto-calc from DOB
+      document.getElementById("dob").addEventListener("change", function () {
+        const dob = new Date(this.value);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+        document.getElementById("age").value = age;
+      });
+
+      function goBackToDashboard() {
+        window.location.href = "dashboard.html";
+      }
+    </script>
+  </body>
+</html>

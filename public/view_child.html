@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>View Child</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #202120;
+        color: white;
+        padding: 2rem;
+      }
+      .detail-box {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #9a6d31;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+      .detail-box h3 {
+        color: #9a6d31;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .detail-item {
+        padding: 1rem;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid #9a6d31;
+        border-radius: 8px;
+      }
+      .detail-item strong {
+        color: #9a6d31;
+      }
+      h5.vaccine-title {
+        color: #f4c430;
+        margin-top: 1.5rem;
+      }
+      select.form-select,
+      input[type="date"].form-control {
+        background-color: #2a2a2a;
+        color: white;
+        border-color: #9a6d31;
+      }
+      select.form-select option {
+        background-color: #2a2a2a;
+        color: white;
+      }
+      button.btn-warning {
+        background-color: #9a6d31;
+        border-color: #9a6d31;
+        color: black;
+      }
+      button.btn-warning:hover {
+        background-color: #b48f3a;
+        border-color: #b48f3a;
+        color: black;
+      }
+      #awarenessDiv {
+        color: lightblue;
+        margin-bottom: 1rem;
+      }
+      #awarenessDate {
+        color: lightgreen;
+        font-weight: bold;
+      }
+      .msg-success {
+        color: lightgreen;
+      }
+      .msg-error {
+        color: #ff6f6f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Child Details -->
+      <div class="detail-box">
+        <h3 id="toggleDetails">
+          <span>Child Details</span>
+          <span id="arrowDetails">▼</span>
+        </h3>
+        <div
+          id="childDetailGrid"
+          class="detail-grid"
+          style="display: none"
+        ></div>
+      </div>
+
+      <!-- Health Data Section -->
+      <div class="detail-box">
+        <h3 id="toggleHealth">
+          <span>Health Data</span>
+          <span id="arrowHealth">▼</span>
+        </h3>
+        <div id="healthDataSection" style="display: none">
+          <div class="text-end mb-2" id="reportButtonDiv" style="display: none">
+            <a
+              id="viewHealthReportLink"
+              href="#"
+              class="btn btn-outline-warning btn-sm"
+              ><i class="bi bi-eye"></i> View Health Report</a
+            >
+          </div>
+          <!-- <div id="healthDataGrid" class="detail-grid"></div> -->
+        </div>
+      </div>
+
+      <!-- Vaccination Section -->
+      <div class="detail-box">
+        <h3 id="toggleVaccination">
+          <span>Vaccination Details</span>
+          <span id="arrowVaccination">▼</span>
+        </h3>
+        <div id="vaccinationSection" style="display: none"></div>
+        <div id="awarenessDiv" style="display: none">
+          <strong>💡 Awareness: Vaccine schedule begins from:</strong>
+          <span id="awarenessDate"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <!-- Main Script -->
+    <script>
+      firebase.initializeApp({
+        apiKey: "AIzaSyDCfpTDLV-bJGvoNrTn7KPgYPzy0Dx4FfU",
+        authDomain: "health-kiosk-f7722.firebaseapp.com",
+        projectId: "health-kiosk-f7722",
+        storageBucket: "health-kiosk-f7722.appspot.com",
+        messagingSenderId: "573510096903",
+        appId: "1:573510096903:web:684402257b3a677c32f2a2",
+      });
+
+      const db = firebase.firestore();
+
+      const childId =
+        new URLSearchParams(window.location.search).get("id") ||
+        localStorage.getItem("lastViewedChildId");
+
+      if (childId) localStorage.setItem("lastViewedChildId", childId);
+
+      const childDetailGrid = document.getElementById("childDetailGrid");
+      const healthDataGrid = document.getElementById("healthDataGrid");
+      const vaccinationSection = document.getElementById("vaccinationSection");
+      const awarenessDiv = document.getElementById("awarenessDiv");
+      const awarenessDate = document.getElementById("awarenessDate");
+
+      const vaccineSchedule = {
+        "At Birth": [
+          { name: "BCG", key: "bcg" },
+          { name: "OPV-0", key: "opv_0" },
+          { name: "Hepatitis B Birth Dose", key: "hep_b_birth" },
+        ],
+        "6 Weeks": [
+          { name: "OPV-1", key: "opv_1" },
+          { name: "Pentavalent-1", key: "pentavalent_1" },
+          { name: "RVV-1", key: "rvv_1" },
+          { name: "fIPV-1", key: "fipv_1" },
+          { name: "PCV-1", key: "pcv_1" },
+        ],
+        "10 Weeks": [
+          { name: "OPV-2", key: "opv_2" },
+          { name: "Pentavalent-2", key: "pentavalent_2" },
+          { name: "RVV-2", key: "rvv_2" },
+        ],
+        "14 Weeks": [
+          { name: "OPV-3", key: "opv_3" },
+          { name: "Pentavalent-3", key: "pentavalent_3" },
+          { name: "RVV-3", key: "rvv_3" },
+          { name: "fIPV-2", key: "fipv_2" },
+          { name: "PCV-2", key: "pcv_2" },
+        ],
+        "9-12 Months": [
+          { name: "MR-1", key: "mr_1" },
+          { name: "JE-1", key: "je_1" },
+          { name: "PCV Booster", key: "pcv_booster" },
+          { name: "Vitamin A (1st dose)", key: "vitamin_a_1" },
+        ],
+        "16-24 Months": [
+          { name: "MR-2", key: "mr_2" },
+          { name: "JE-2", key: "je_2" },
+          { name: "DPT Booster-1", key: "dpt_booster_1" },
+          { name: "OPV Booster", key: "opv_booster" },
+          { name: "Vitamin A (2nd dose onwards)", key: "vitamin_a_2" },
+        ],
+        "5-6 Years": [{ name: "DPT Booster-2", key: "dpt_booster_2" }],
+        "10 Years": [{ name: "Td-10", key: "td_10" }],
+        "16 Years": [{ name: "Td-16", key: "td_16" }],
+      };
+
+      const addDays = (d, days) => {
+        const copy = new Date(d);
+        copy.setDate(copy.getDate() + days);
+        return copy;
+      };
+      const addMonths = (d, m) => {
+        const copy = new Date(d);
+        copy.setMonth(copy.getMonth() + m);
+        return copy;
+      };
+      const addYears = (d, y) => {
+        const copy = new Date(d);
+        copy.setFullYear(copy.getFullYear() + y);
+        return copy;
+      };
+
+      const getAwarenessDate = (dob, group) => {
+        if (!dob) return null;
+        switch (group) {
+          case "At Birth":
+            return dob;
+          case "6 Weeks":
+            return addDays(dob, 42);
+          case "10 Weeks":
+            return addDays(dob, 70);
+          case "14 Weeks":
+            return addDays(dob, 98);
+          case "9-12 Months":
+            return addMonths(dob, 9);
+          case "16-24 Months":
+            return addMonths(dob, 16);
+          case "5-6 Years":
+            return addYears(dob, 5);
+          case "10 Years":
+            return addYears(dob, 10);
+          case "16 Years":
+            return addYears(dob, 16);
+          default:
+            return null;
+        }
+      };
+
+      const formatDate = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        return `${String(d.getDate()).padStart(2, "0")}-${String(
+          d.getMonth() + 1
+        ).padStart(2, "0")}-${d.getFullYear()}`;
+      };
+
+      const fetchChildDetails = async () => {
+        try {
+          const res = await fetch(`/get-child?id=${childId}`);
+          const data = await res.json();
+          if (!data || !data.dob) {
+            childDetailGrid.innerHTML =
+              "<p style='color:#ff6f6f'>No child data found or DOB missing.</p>";
+            return;
+          }
+          childDetailGrid.innerHTML = Object.entries(data)
+            .filter(([k]) => !["created_at", "updated_at"].includes(k))
+            .map(
+              ([k, v]) =>
+                `<div class="detail-item"><strong>${k
+                  .replace(/_/g, " ")
+                  .toUpperCase()}:</strong><br/>${v}</div>`
+            )
+            .join("");
+
+          const dob = new Date(data.dob);
+          const firstGroup = Object.keys(vaccineSchedule)[0];
+          const awareness = getAwarenessDate(dob, firstGroup);
+          if (awareness) {
+            awarenessDate.textContent = formatDate(awareness);
+            awarenessDiv.style.display = "block";
+          }
+        } catch (e) {
+          console.error(e);
+          childDetailGrid.innerHTML =
+            "<p style='color:#ff6f6f'>Error loading child data.</p>";
+        }
+      };
+
+      const fetchHealthData = async () => {
+        try {
+          const snap = await db
+            .collection("children")
+            .doc(childId)
+            .collection("health_data")
+            .get();
+          if (!snap.empty) {
+            document.getElementById("reportButtonDiv").style.display = "block";
+            document.getElementById(
+              "viewHealthReportLink"
+            ).href = `/view_child_report.html?id=${childId}`;
+            let html = "";
+            snap.forEach((doc) => {
+              const d = doc.data();
+              html += `<div class="detail-item"><strong>${doc.id.toUpperCase()}</strong>: ${JSON.stringify(
+                d
+              )}</div>`;
+            });
+            healthDataGrid.innerHTML = html;
+          }
+        } catch (e) {
+          console.error(e);
+          healthDataGrid.innerHTML =
+            "<p style='color:#ff6f6f'>Error loading health data.</p>";
+        }
+      };
+
+      async function renderVaccinationForms() {
+        vaccinationSection.innerHTML = "";
+
+        const vaccinationSnap = await db
+          .collection("children")
+          .doc(childId)
+          .collection("vaccination")
+          .get();
+
+        const vaccinationData = {};
+        vaccinationSnap.forEach((doc) => {
+          vaccinationData[doc.id] = doc.data();
+        });
+
+        let showNextGroup = true;
+
+        for (const [group, vaccines] of Object.entries(vaccineSchedule)) {
+          if (!showNextGroup) break;
+
+          const dobRes = await fetch(`/get-child?id=${childId}`);
+          const dobData = await dobRes.json();
+          const dob = dobData.dob ? new Date(dobData.dob) : null;
+          const awareness = getAwarenessDate(dob, group);
+          const awarenessStr = awareness ? formatDate(awareness) : "N/A";
+          const awarenessMinStr = awareness
+            ? awareness.toISOString().split("T")[0]
+            : "";
+          const todayStr = new Date().toISOString().split("T")[0];
+
+          vaccinationSection.innerHTML += `
+<h5 class="vaccine-title">${group} <small style="color:#b5b57a;font-weight:normal;">(Due ~ ${awarenessStr})</small></h5>
+`;
+
+          let allDone = true;
+
+          for (const vaccine of vaccines) {
+            const { name, key } = vaccine;
+            const vData = vaccinationData[key] || {};
+            const done = vData.status === true;
+            const dateVal = vData.date_schedule || "";
+            const safeId = key.replace(/[^a-z0-9_]/g, "_");
+            const awarenessMinStr = awareness
+              ? awareness.toISOString().split("T")[0]
+              : "";
+            const todayStr = new Date().toISOString().split("T")[0];
+
+            vaccinationSection.innerHTML += `
+  <form id="form_${safeId}" class="mb-4">
+    <div class="mb-2">
+      <label><strong style="color:#9a6d31">${name}</strong></label>
+      <select id="status_${safeId}" class="form-select" required>
+        <option value="">-- Select --</option>
+        <option value="Done" ${done ? "selected" : ""}>Done</option>
+        <option value="Not Done" ${!done ? "selected" : ""}>Not Done</option>
+      </select>
+    </div>
+    <div id="dateDiv_${safeId}" class="mb-2 ${done ? "" : "d-none"}">
+     
+      <input
+        type="date"
+        id="date_${safeId}"
+        class="form-control"
+        value="${dateVal}"
+        min="${awarenessMinStr}"
+        max="${todayStr}"
+        required
+      />
+
+    </div>
+    <button type="submit" class="btn btn-warning btn-sm">Save</button>
+    <div id="msg_${safeId}" class="mt-2"></div>
+  </form>
+`;
+
+            if (!done) allDone = false;
+          }
+
+          showNextGroup = allDone;
+        }
+
+        for (const [group, vaccines] of Object.entries(vaccineSchedule)) {
+          for (const vaccine of vaccines) {
+            const { key } = vaccine;
+            const safeId = key.replace(/[^a-z0-9_]/g, "_");
+
+            const statusEl = document.getElementById(`status_${safeId}`);
+            const dateDiv = document.getElementById(`dateDiv_${safeId}`);
+            const dateInput = document.getElementById(`date_${safeId}`);
+            const form = document.getElementById(`form_${safeId}`);
+            const msg = document.getElementById(`msg_${safeId}`);
+
+            if (!form) continue;
+
+            statusEl.addEventListener("change", () => {
+              if (statusEl.value === "Done") {
+                dateDiv.classList.remove("d-none");
+                dateInput.required = true;
+              } else {
+                dateDiv.classList.add("d-none");
+                dateInput.required = false;
+                dateInput.value = "";
+              }
+              msg.innerHTML = "";
+            });
+
+            form.addEventListener("submit", async (e) => {
+              e.preventDefault();
+              msg.innerHTML = "";
+
+              const statusVal = statusEl.value;
+              const dateVal = dateInput.value;
+
+              if (!statusVal) {
+                msg.innerHTML =
+                  '<span class="msg-error">Please select vaccination status.</span>';
+                return;
+              }
+
+              if (statusVal === "Done" && !dateVal) {
+                msg.innerHTML =
+                  '<span class="msg-error">Please enter vaccination date.</span>';
+                return;
+              }
+
+              try {
+                const res = await fetch(
+                  `/update-child-vaccine?childId=${childId}&vaccine=${key}`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      status: statusVal === "Done",
+                      date_schedule: dateVal || null,
+                    }),
+                  }
+                );
+                const result = await res.json();
+                if (result.success) {
+                  msg.innerHTML =
+                    '<span class="msg-success">✅ Vaccination saved.</span>';
+                  setTimeout(() => renderVaccinationForms(), 500); // re-render view
+                } else {
+                  msg.innerHTML = `<span class="msg-error">❌ ${result.message}</span>`;
+                }
+              } catch (error) {
+                msg.innerHTML =
+                  '<span class="msg-error">❌ Error saving vaccination data.</span>';
+                console.error(error);
+              }
+            });
+          }
+        }
+      }
+
+      document.getElementById("toggleDetails").onclick = () => {
+        const grid = childDetailGrid;
+        const arrow = document.getElementById("arrowDetails");
+        const isVisible = grid.style.display !== "none";
+        grid.style.display = isVisible ? "none" : "grid";
+        arrow.textContent = isVisible ? "▼" : "▲";
+      };
+
+      document.getElementById("toggleHealth").onclick = () => {
+        const section = document.getElementById("healthDataSection");
+        const arrow = document.getElementById("arrowHealth");
+        const isVisible = section.style.display !== "none";
+        section.style.display = isVisible ? "none" : "block";
+        arrow.textContent = isVisible ? "▼" : "▲";
+      };
+
+      document.getElementById("toggleVaccination").onclick = () => {
+        const section = vaccinationSection;
+        const arrow = document.getElementById("arrowVaccination");
+        const isVisible = section.style.display !== "none";
+        section.style.display = isVisible ? "none" : "block";
+        arrow.textContent = isVisible ? "▼" : "▲";
+      };
+
+      if (!childId) {
+        alert("❌ No child ID in URL.");
+        window.location.href = "dashboard.html#children";
+      } else {
+        fetchChildDetails();
+        fetchHealthData();
+        renderVaccinationForms();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+        --glass-panel: rgba(172, 172, 172, 0.3);
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .form-box {
+        background: var(--glass-panel);
+        padding: 30px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--accent-gold);
+        font-weight: 600;
+      }
+      .form-label {
+        font-weight: 500;
+        color: white;
+      }
+      .form-control {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .form-control:focus {
+        background: transparent;
+        color: white;
+        border-color: var(--accent-gold);
+        box-shadow: none;
+      }
+      select.form-control option {
+        background-color: #1e1e1e;
+        color: white;
+      }
+      .btn-primary {
+        background: var(--accent-gold);
+        border: none;
+        padding: 10px;
+        font-weight: 500;
+      }
+      .btn-primary:hover {
+        background: #7e591f;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000">
+      <button
+        onclick="goBackToDashboard()"
+        style="background: none; border: none; color: white; font-size: 24px"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="form-box">
+      <h2 id="formTitle">Add Admin</h2>
+      <form id="adminForm">
+        <div class="mb-3">
+          <label class="form-label">Admin ID</label>
+          <input
+            type="text"
+            class="form-control"
+            id="admin_id"
+            readonly
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            placeholder="Enter Name"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Aadhaar Number</label>
+          <input
+            type="text"
+            class="form-control"
+            id="aadhaar_no"
+            placeholder="Enter Aadhaar Number"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            placeholder="Enter Password"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contact</label>
+          <input
+            type="text"
+            class="form-control"
+            id="contact"
+            placeholder="Enter Contact Number"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            placeholder="Enter Email"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Panchayat ID</label>
+          <select class="form-control" id="panchayat_id">
+            <option value="">-- Select Panchayat --</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+          Submit
+        </button>
+      </form>
+    </div>
+
+    <script>
+      const API_BASE_URL = "http://localhost:3000"; // Update to your backend URL
+
+      // Check authentication
+      const authData = JSON.parse(
+        localStorage.getItem("authData") || sessionStorage.getItem("authData")
+      );
+      console.log("authData:", authData);
+      if (!authData) {
+        alert("Please log in to continue.");
+        window.location.href = "index.html";
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("editId");
+
+      async function generateNextAdminId() {
+        try {
+          console.log("Fetching new admin ID...");
+          const response = await fetch(`${API_BASE_URL}/get-latest-id?collection=admins&prefix=ADM`, {
+            headers: {
+              Authorization: `Bearer ${authData.token}`,
+            },
+          });
+          console.log("Get latest ID response status:", response.status);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to generate admin ID");
+          }
+          const { nextId } = await response.json();
+          console.log("Generated admin ID:", nextId);
+          document.getElementById("admin_id").value = nextId;
+        } catch (err) {
+          console.error("Error generating admin ID:", err);
+          alert("Error generating admin ID: " + err.message);
+        }
+      }
+
+      async function loadPanchayatOptions() {
+        const panchayatSelect = document.getElementById("panchayat_id");
+        try {
+          console.log("Fetching panchayats...");
+          const response = await fetch(`${API_BASE_URL}/get-panchayats`, {
+            headers: {
+              Authorization: `Bearer ${authData.token}`,
+            },
+          });
+          console.log("Get panchayats response status:", response.status);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch panchayats");
+          }
+          const panchayats = await response.json();
+          console.log("Panchayats:", panchayats);
+          panchayats.forEach((panchayat) => {
+            const opt = document.createElement("option");
+            opt.value = panchayat.panchayat_id;
+            opt.textContent = `${panchayat.panchayat_id} - ${panchayat.panchayat_name || "Unknown"}`;
+            panchayatSelect.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Error loading panchayat options:", err);
+          alert("Error loading panchayat options: " + err.message);
+        }
+      }
+
+      async function loadAdminData(id) {
+        try {
+          console.log("Fetching admin data for ID:", id);
+          const response = await fetch(`${API_BASE_URL}/get-admin?admin_id=${id}`, {
+            headers: {
+              Authorization: `Bearer ${authData.token}`,
+            },
+          });
+          console.log("Get admin response status:", response.status);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Admin not found");
+          }
+          const data = await response.json();
+          document.getElementById("admin_id").value = id;
+          document.getElementById("name").value = data.name || "";
+          document.getElementById("aadhaar_no").value = data.aadhaar_no || "";
+          document.getElementById("password").value = ""; // Password not returned
+          document.getElementById("contact").value = data.contact || "";
+          document.getElementById("email").value = data.email || "";
+          document.getElementById("panchayat_id").value = data.panchayat_id || "";
+          document.getElementById("formTitle").textContent = "Edit Admin";
+          document.getElementById("submitBtn").textContent = "Update Admin";
+        } catch (err) {
+          console.error("Error loading admin data:", err);
+          alert("Error loading admin data: " + err.message);
+        }
+      }
+
+      window.onload = () => {
+        loadPanchayatOptions().then(() => {
+          if (editId) {
+            loadAdminData(editId);
+          } else {
+            generateNextAdminId();
+          }
+        });
+      };
+
+      document.getElementById("adminForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const data = {
+          admin_id: document.getElementById("admin_id").value,
+          name: document.getElementById("name").value.trim(),
+          aadhaar_no: document.getElementById("aadhaar_no").value.trim(),
+          password: document.getElementById("password").value,
+          contact: document.getElementById("contact").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          panchayat_id: document.getElementById("panchayat_id").value || null,
+        };
+
+        console.log("Submitting payload:", data);
+
+        try {
+          const endpoint = editId ? "/update-admin" : "/add-admin";
+          const method = editId ? "PUT" : "POST";
+
+          const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: method,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authData.token}`,
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            alert(
+              editId ? "Admin updated successfully!" : "Admin added successfully!"
+            );
+            window.location.href = "dashboard.html#adminManagement";
+          } else {
+            console.error("Server response:", result);
+            alert(result.message || "Operation failed.");
+          }
+        } catch (err) {
+          console.error("Error saving admin:", err);
+          alert("Error saving admin: " + err.message);
+        }
+      });
+
+      function goBackToDashboard() {
+        window.location.href = "dashboard.html#adminManagement";
+      }
+    </script>
+  </body>
+</html>

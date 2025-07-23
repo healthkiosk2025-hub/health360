@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mother Health Report</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+      body {
+        background-color: #202120;
+        color: white;
+        padding: 2rem;
+      }
+      .detail-box {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #9a6d31;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+      .detail-box h3 {
+        color: #9a6d31;
+        margin-bottom: 1rem;
+      }
+      canvas {
+        max-width: 100%;
+        width: 100%;
+        height: 400px !important;
+        background-color: rgba(255, 255, 255, 0.03);
+        padding: 1rem;
+        border-radius: 8px;
+      }
+      .back-button {
+        margin-bottom: 1rem;
+      }
+      .error-message, .loading-message {
+        text-align: center;
+        padding: 1rem;
+      }
+      .chart-row {
+        margin-bottom: 2rem;
+      }
+      .chart-col {
+        padding: 0 15px;
+      }
+      .slider-container {
+        margin: 1rem 0;
+      }
+      .slider-label {
+        color: #9a6d31;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+      }
+      input[type="range"] {
+        width: 100%;
+        background: transparent;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        background: #ffcd56;
+      }
+      input[type="range"]::-moz-range-thumb {
+        background: #ffcd56;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a
+        href="#"
+        id="backButton"
+        class="btn btn-outline-warning btn-sm back-button"
+      >
+        <i class="bi bi-arrow-left"></i> Back to Mother Details
+      </a>
+      <div class="row chart-row">
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>BMI Trend</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="bmiSlider">Slide to view earlier dates</label>
+              <input type="range" id="bmiSlider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="bmiChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="bmiChart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>Height Trend (cm)</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="heightSlider">Slide to view earlier dates</label>
+              <input type="range" id="heightSlider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="heightChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="heightChart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row chart-row">
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>Weight Trend (kg)</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="weightSlider">Slide to view earlier dates</label>
+              <input type="range" id="weightSlider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="weightChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="weightChart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>Hemoglobin Trend (g/dL)</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="hemoglobinSlider">Slide to view earlier dates</label>
+              <input type="range" id="hemoglobinSlider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="hemoglobinChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="hemoglobinChart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row chart-row">
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>SpO2 Trend (%)</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="spo2Slider">Slide to view earlier dates</label>
+              <input type="range" id="spo2Slider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="spo2ChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="spo2Chart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>Pulse Trend (BPM)</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="pulseSlider">Slide to view earlier dates</label>
+              <input type="range" id="pulseSlider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="pulseChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="pulseChart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row chart-row">
+        <div class="col-md-6 chart-col">
+          <div class="detail-box">
+            <h3>Temperature Trend (°C)</h3>
+            <div class="slider-container">
+              <label class="slider-label" for="temperatureSlider">Slide to view earlier dates</label>
+              <input type="range" id="temperatureSlider" min="0" max="0" value="0" class="form-range" style="display: none;" />
+            </div>
+            <div id="temperatureChartContainer">
+              <div class="loading-message text-muted">Loading...</div>
+              <canvas id="temperatureChart" style="display: none;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE_URL = "http://localhost:3000";
+      const motherId = new URLSearchParams(window.location.search).get("id");
+      const authData = JSON.parse(localStorage.getItem("authData") || sessionStorage.getItem("authData"));
+
+      if (!authData) {
+        alert("Please log in to continue.");
+        window.location.href = "index.html";
+      }
+
+      document.getElementById("backButton").href = `/view_mother.html?id=${motherId}`;
+
+      let charts = {};
+      let allRecords = [];
+      const ITEMS_PER_PAGE = 7;
+
+      const chartConfigs = [
+        {
+          id: "bmiChart",
+          containerId: "bmiChartContainer",
+          sliderId: "bmiSlider",
+          label: "BMI",
+          dataKey: "bmi",
+          borderColor: "#9a6d31",
+          backgroundColor: "rgba(154, 109, 49, 0.2)"
+        },
+        {
+          id: "heightChart",
+          containerId: "heightChartContainer",
+          sliderId: "heightSlider",
+          label: "Height (cm)",
+          dataKey: "height",
+          borderColor: "#36a2eb",
+          backgroundColor: "rgba(54, 162, 235, 0.2)"
+        },
+        {
+          id: "weightChart",
+          containerId: "weightChartContainer",
+          sliderId: "weightSlider",
+          label: "Weight (kg)",
+          dataKey: "weight",
+          borderColor: "#ff6384",
+          backgroundColor: "rgba(255, 99, 132, 0.2)"
+        },
+        {
+          id: "hemoglobinChart",
+          containerId: "hemoglobinChartContainer",
+          sliderId: "hemoglobinSlider",
+          label: "Hemoglobin (g/dL)",
+          dataKey: "hemoglobin",
+          borderColor: "#ff9f40",
+          backgroundColor: "rgba(255, 159, 64, 0.2)"
+        },
+        {
+          id: "spo2Chart",
+          containerId: "spo2ChartContainer",
+          sliderId: "spo2Slider",
+          label: "SpO2 (%)",
+          dataKey: "spo2",
+          borderColor: "#4bc0c0",
+          backgroundColor: "rgba(75, 192, 192, 0.2)"
+        },
+        {
+          id: "pulseChart",
+          containerId: "pulseChartContainer",
+          sliderId: "pulseSlider",
+          label: "Pulse (BPM)",
+          dataKey: "pulse",
+          borderColor: "#9966ff",
+          backgroundColor: "rgba(153, 102, 255, 0.2)"
+        },
+        {
+          id: "temperatureChart",
+          containerId: "temperatureChartContainer",
+          sliderId: "temperatureSlider",
+          label: "Temperature (°C)",
+          dataKey: "temperature",
+          borderColor: "#ffcd56",
+          backgroundColor: "rgba(255, 205, 86, 0.2)"
+        }
+      ];
+
+      function updateChart(config, startIndex) {
+        const validRecords = allRecords.filter(record => record[config.dataKey] != null);
+        const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, validRecords.length);
+        const visibleRecords = validRecords.slice(startIndex, endIndex);
+        const labels = visibleRecords.map(record => record.date);
+        const data = visibleRecords.map(record => record[config.dataKey]);
+        const canvas = document.getElementById(config.id);
+        const container = document.getElementById(config.containerId);
+        const slider = document.getElementById(config.sliderId);
+
+        if (data.length === 0) {
+          container.innerHTML = `<div class='text-muted'>No ${config.label} data available.</div>`;
+          slider.style.display = "none";
+          slider.previousElementSibling.style.display = "none";
+          return;
+        }
+
+        canvas.style.display = "block";
+        slider.style.display = "block";
+        slider.previousElementSibling.style.display = "block";
+        slider.max = Math.max(0, validRecords.length - ITEMS_PER_PAGE);
+        slider.value = startIndex;
+
+        if (charts[config.id]) {
+          charts[config.id].data.labels = labels;
+          charts[config.id].data.datasets[0].data = data;
+          charts[config.id].update();
+        } else {
+          charts[config.id] = new Chart(canvas, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [{
+                label: config.label,
+                data: data,
+                borderColor: config.borderColor,
+                backgroundColor: config.backgroundColor,
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { labels: { color: "white" } },
+                title: { display: false }
+              },
+              scales: {
+                x: {
+                  title: { display: true, text: "Date", color: "white" },
+                  ticks: { color: "white" }
+                },
+                y: {
+                  title: { display: true, text: config.label, color: "white" },
+                  ticks: { color: "white" },
+                  beginAtZero: false
+                }
+              }
+            }
+          });
+        }
+      }
+
+      async function fetchHealthData() {
+        if (!window.Chart) {
+          document.querySelectorAll(".detail-box").forEach(container => {
+            container.innerHTML = "<div class='error-message text-danger'>Error: Chart library failed to load.</div>";
+          });
+          console.error("Chart.js is not loaded.");
+          return;
+        }
+
+        try {
+          console.log("Fetching health data for:", motherId);
+          const res = await fetch(`${API_BASE_URL}/get-health-data?motherId=${motherId}`, {
+            headers: { "Authorization": `Bearer ${authData.token}` }
+          });
+          if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || "Failed to fetch health data");
+          }
+          allRecords = (await res.json()).records;
+          
+          // Hide all loading messages
+          document.querySelectorAll(".loading-message").forEach(el => el.style.display = "none");
+
+          if (allRecords.length === 0) {
+            document.querySelectorAll(".detail-box").forEach(container => {
+              const chartContainer = container.querySelector("canvas").parentElement;
+              chartContainer.innerHTML = "<div class='text-muted'>No health data available.</div>";
+              container.querySelector(".slider-container").style.display = "none";
+            });
+            return;
+          }
+
+          // Sort records by date ascending
+          allRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+          // Initialize each chart and slider
+          chartConfigs.forEach(config => {
+            const validRecords = allRecords.filter(record => record[config.dataKey] != null);
+            const startIndex = Math.max(0, validRecords.length - ITEMS_PER_PAGE);
+            updateChart(config, startIndex);
+            const slider = document.getElementById(config.sliderId);
+            slider.oninput = () => updateChart(config, parseInt(slider.value));
+          });
+        } catch (err) {
+          console.error("Error fetching health data:", err);
+          document.querySelectorAll(".detail-box").forEach(container => {
+            const chartContainer = container.querySelector("canvas").parentElement;
+            chartContainer.innerHTML = "<div class='error-message text-danger'>Error loading chart.</div>";
+            container.querySelector(".slider-container").style.display = "none";
+          });
+        }
+      }
+
+      // Check if Chart.js is loaded before fetching data
+      if (typeof Chart === "undefined") {
+        document.querySelectorAll(".detail-box").forEach(container => {
+          container.innerHTML = "<div class='error-message text-danger'>Error: Chart library failed to load.</div>";
+        });
+        console.error("Chart.js is not defined. Ensure the script is loaded correctly.");
+      } else {
+        fetchHealthData();
+      }
+    </script>
+  </body>
+</html>

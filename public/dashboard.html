@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthKiosk - Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      crossorigin="anonymous"
+    />
+    <style>
+      :root {
+        --bg-dark: #202120;
+        --accent-gold: #9a6d31;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+        background-size: cover;
+        color: white;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: rgba(32, 33, 32, 0.95);
+        color: #fff;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: -250px;
+        transition: left 0.3s;
+        z-index: 999;
+        border-right: 1px solid var(--accent-gold);
+      }
+
+      .logo-container img {
+        width: 400px;
+        height: auto;
+        display: block;
+        margin: auto;
+        border-radius: 25px;
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .sidebar-header {
+        padding: 1rem;
+        background: rgba(32, 33, 32, 1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--accent-gold);
+      }
+
+      .sidebar ul {
+        padding: 0;
+        list-style: none;
+        margin-top: 20px;
+      }
+
+      .sidebar ul li {
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar ul li:hover {
+        background-color: rgba(154, 109, 49, 0.1);
+        border-left: 3px solid var(--accent-gold);
+      }
+
+      .sidebar ul li i {
+        color: var(--accent-gold);
+        width: 20px;
+        text-align: center;
+      }
+
+      .content {
+        margin-left: 0;
+        transition: margin-left 0.3s;
+        padding: 0;
+        min-height: 100vh;
+        background: #202120;
+      }
+
+      .content.shift {
+        margin-left: 250px;
+      }
+
+      .navbar-custom {
+        background-color: rgba(32, 33, 32, 0.95);
+        border-bottom: 1px solid var(--accent-gold);
+        padding: 0.75rem 2rem;
+      }
+
+      .btn-outline-light {
+        border-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        transition: all 0.3s;
+      }
+
+      .btn-outline-light:hover {
+        background-color: var(--accent-gold);
+        border-color: var(--accent-gold);
+        transform: translateY(-2px);
+      }
+
+      .btn-outline-light i {
+        color: var(--accent-gold);
+      }
+
+      .btn-outline-light:hover i {
+        color: white;
+      }
+
+      .toggle-btn {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: white;
+        background: #202120;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        transition: all 0.3s;
+      }
+
+      .toggle-btn:hover {
+        background-color: #8a5d29;
+        transform: scale(1.05);
+      }
+
+      .close-btn {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--accent-gold);
+        transition: transform 0.2s;
+      }
+
+      .close-btn:hover {
+        transform: rotate(90deg);
+      }
+
+      .section {
+        display: none;
+        animation: fadeIn 0.5s ease-out;
+        padding: 2rem;
+      }
+
+      .section.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .logo-img {
+        max-height: 45px;
+      }
+
+      .hide {
+        display: none !important;
+      }
+
+      .mother-item {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--accent-gold);
+      }
+
+      .mother-item i {
+        margin-left: 15px;
+        cursor: pointer;
+        color: var(--accent-gold);
+      }
+
+      #searchBar {
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        width: 100%;
+        border: 1px solid #ccc;
+      }
+
+      .mother-details-box {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-top: 2rem;
+        border: 1px solid var(--accent-gold);
+      }
+
+      .mother-details-box h4 {
+        margin-bottom: 1.5rem;
+        color: var(--accent-gold);
+      }
+
+      .mother-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+      }
+
+      .mother-grid-item {
+        background-color: rgba(255, 255, 255, 0.03);
+        padding: 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(154, 109, 49, 0.3);
+      }
+
+      .mother-grid-item strong {
+        color: var(--accent-gold);
+        display: block;
+        margin-bottom: 0.4rem;
+        font-size: 0.95rem;
+      }
+
+      .border-gold {
+        border: 1px solid var(--accent-gold);
+        border-radius: 12px;
+      }
+
+      .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .dashboard-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--accent-gold);
+        transition: transform 0.3s;
+        cursor: pointer;
+      }
+
+      .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .dashboard-card i {
+        font-size: 2rem;
+        color: var(--accent-gold);
+        margin-bottom: 1rem;
+      }
+
+      .dashboard-card h3 {
+        color: var(--accent-gold);
+        margin-bottom: 0.5rem;
+      }
+
+      .superadmin-only {
+        display: none;
+      }
+
+      .superadmin .superadmin-only {
+        display: block;
+      }
+
+      .superadmin .superadmin-btn {
+        display: inline-block !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Authentication Check -->
+    <script>
+      // Check authentication and user role
+      const authData = JSON.parse(
+        localStorage.getItem("authData") || sessionStorage.getItem("authData")
+      );
+
+      // Redirect if not authenticated
+      if (!authData) {
+        window.location.href = "index.html";
+      }
+
+      // Verify user role and permissions
+      function verifyUserRole() {
+        if (!authData) return false;
+
+        // Add superadmin class to body if user is superadmin
+        if (authData.role === "superadmin") {
+          document.body.classList.add("superadmin");
+          // Show superadmin cards
+          document.querySelectorAll('.dashboard-card.superadmin-only').forEach(el => {
+            el.style.display = 'block';
+          });
+          return true;
+        }
+
+        // Hide all superadmin sections and cards if user is not superadmin
+        document.querySelectorAll(".superadmin-only").forEach((el) => {
+          el.style.display = "none";
+        });
+
+        // If user somehow navigated to a superadmin page, redirect to dashboard
+        const currentSection = window.location.hash.substring(1);
+        const superadminSections = ["adminManagement", "panchayatManagement"];
+        if (superadminSections.includes(currentSection)) {
+          showSection("dashboard");
+          window.location.hash = "";
+        }
+
+        return true;
+      }
+
+      // Initialize role verification on page load
+      document.addEventListener("DOMContentLoaded", verifyUserRole);
+    </script>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>Health 360 Kiosk</h3>
+        <span class="close-btn" onclick="closeSidebar()">×</span>
+      </div>
+      <ul>
+        <li onclick="showSection('dashboard')">
+          <i class="fa-solid fa-house me-2"></i> Dashboard
+        </li>
+        <li onclick="showSection('mothers')">
+          <i class="fa-solid fa-female me-2"></i> Mothers
+        </li>
+        <li onclick="showSection('children')">
+          <i class="fa-solid fa-female me-2"></i> Child
+        </li>
+        <!-- Superadmin only menu items -->
+        <li
+          class="superadmin-only"
+          onclick="showSection('adminManagement')"
+        >
+          <i class="fa-solid fa-users-gear me-2"></i> Admin Management
+        </li>
+        <li
+          class="superadmin-only"
+          onclick="showSection('panchayatManagement')"
+        >
+          <i class="fa-solid fa-building me-2"></i> Panchayat Management
+        </li>
+        <li onclick="logout()">
+          <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content" id="mainContent">
+      <!-- Navbar -->
+      <nav class="navbar-custom">
+        <div
+          class="container-fluid d-flex justify-content-between align-items-center"
+        >
+          <div class="d-flex align-items-center gap-3">
+            <button class="toggle-btn" id="menuBtn" onclick="openSidebar()">
+              <i class="fa-solid fa-bars"></i>
+              <img
+                src="Color logo - no background.png"
+                alt="Logo"
+                class="logo-img"
+                id="navbarLogo"
+                onclick="openSidebar()"
+              />
+            </button>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-outline-light"
+              onclick="location.href='add_mother.html'"
+            >
+              <i class="fa-solid fa-female me-2"></i> Add Mother
+            </button>
+            <button
+              class="btn btn-outline-light"
+              onclick="location.href='add_child.html'"
+            >
+              <i class="fa-solid fa-child me-2"></i> Add Child
+            </button>
+            <!-- Superadmin only buttons -->
+            <button
+              class="btn btn-outline-light superadmin-btn"
+              style="display: none"
+              onclick="location.href='add_admin.html'"
+            >
+              <i class="fa-solid fa-user-plus me-2"></i> Add Admin
+            </button>
+            <button
+              class="btn btn-outline-light superadmin-btn"
+              style="display: none"
+              onclick="location.href='add_panchayat.html'"
+            >
+              <i class="fa-solid fa-map-location-dot me-2"></i> Add Panchayat
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Dashboard Section -->
+      <div id="dashboardSection" class="section active">
+        <div class="logo-container">
+          <img src="kiosk_logo2.png" alt="Health 360 Kiosk" />
+        </div>
+        <h2 class="text-center mt-4">Welcome to Health 360 Kiosk</h2>
+        <h5 class="text-center text-white" id="dashboardSubtitle">
+          Admin Dashboard
+        </h5>
+
+        <div class="dashboard-cards">
+          <div class="dashboard-card" onclick="showSection('mothers')">
+            <i class="fa-solid fa-female"></i>
+            <h3>Mother</h3>
+            <p>Manage mother records and view details</p>
+          </div>
+          <div class="dashboard-card" onclick="showSection('children')">
+            <i class="fa-solid fa-child"></i>
+            <h3>Child</h3>
+            <p>Manage child records and view details</p>
+          </div>
+          <!-- Superadmin only cards -->
+          <div
+            class="dashboard-card superadmin-only"
+            onclick="showSection('adminManagement')"
+            style="display: none;"
+          >
+            <i class="fa-solid fa-users-gear"></i>
+            <h3>Admin Management</h3>
+            <p>Manage all admin accounts</p>
+          </div>
+          <div
+            class="dashboard-card superadmin-only"
+            onclick="showSection('panchayatManagement')"
+            style="display: none;"
+          >
+            <i class="fa-solid fa-building"></i>
+            <h3>Panchayat Management</h3>
+            <p>Manage panchayat records</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="container mt-4">
+        <!-- Mothers Section -->
+        <div id="mothersSection" class="section">
+          <h2 class="text-center mb-4">Mother Records</h2>
+          <!-- Add Mother Button -->
+          <div class="d-flex justify-content-end mb-3">
+            <button
+              class="btn btn-outline-light"
+              onclick="location.href='add_mother.html'"
+            >
+              <i class="fa-solid fa-person-pregnant me-2"></i> Add New Mother
+            </button>
+          </div>
+          <!-- Styled Box -->
+          <div class="border-gold p-4">
+            <h4 class="text-center mb-4" style="color: var(--accent-gold)">
+              Mothers Details
+            </h4>
+            <!-- Search Bar -->
+            <input
+              type="text"
+              id="searchBarMother"
+              class="form-control mb-3"
+              placeholder="Search mothers by name or ID..."
+              onkeyup="filterMothers()"
+            />
+            <!-- Mothers List -->
+            <div id="motherList" class="list-group"></div>
+          </div>
+        </div>
+
+        <!-- Children Section -->
+        <div id="childrenSection" class="section">
+          <h2 class="text-center mb-4">Children Records</h2>
+          <!-- Add Child Button -->
+          <div class="d-flex justify-content-end mb-3">
+            <button
+              class="btn btn-outline-light"
+              onclick="location.href='add_child.html'"
+            >
+              <i class="fa-solid fa-child me-2"></i> Add New Child
+            </button>
+          </div>
+          <!-- Styled Box -->
+          <div class="border-gold p-4">
+            <h4 class="text-center mb-4" style="color: var(--accent-gold)">
+              Children Details
+            </h4>
+            <!-- Search Bar -->
+            <input
+              type="text"
+              id="searchBar"
+              class="form-control mb-3"
+              placeholder="Search children by name or ID..."
+              onkeyup="filterChildren()"
+            />
+            <!-- Children List -->
+            <div id="childList" class="list-group"></div>
+            <!-- Child Details Box -->
+            <div
+              id="childDetails"
+              class="child-details-box text-white mt-4"
+              style="display: none"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Admin Management Section (Superadmin only) -->
+        <div id="adminManagementSection" class="section superadmin-only">
+          <h2 class="text-center mb-4">Admin Management</h2>
+          <!-- Add Admin Button -->
+          <div class="d-flex justify-content-end mb-3">
+            <button
+              class="btn btn-outline-light"
+              onclick="location.href='add_admin.html'"
+            >
+              <i class="fa-solid fa-user-plus me-2"></i> Add New Admin
+            </button>
+          </div>
+          <!-- Styled Box -->
+          <div class="border-gold p-4">
+            <h4 class="text-center mb-4" style="color: var(--accent-gold)">
+              Admin Details
+            </h4>
+            <!-- Search Bar -->
+            <input
+              type="text"
+              id="searchAdminBar"
+              class="form-control mb-3"
+              placeholder="Search admins by name or Aadhaar..."
+              onkeyup="filterAdmins()"
+            />
+            <!-- Admin List -->
+            <div id="adminList" class="list-group"></div>
+            <!-- Admin Details Box -->
+            <div
+              id="adminDetails"
+              class="admin-details-box text-white mt-4"
+              style="display: none"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Panchayat Management Section (Superadmin only) -->
+        <div id="panchayatManagementSection" class="section superadmin-only">
+          <h2 class="text-center mb-4">Panchayat Management</h2>
+          <!-- Add Panchayat Button -->
+          <div class="d-flex justify-content-end mb-3">
+            <button
+              class="btn btn-outline-light"
+              onclick="location.href='add_panchayat.html'"
+            >
+              <i class="fa-solid fa-map-location-dot me-2"></i> Add New Panchayat
+            </button>
+          </div>
+          <!-- Styled Box -->
+          <div class="border-gold p-4">
+            <h4 class="text-center mb-4" style="color: var(--accent-gold)">
+              Panchayat Details
+            </h4>
+            <!-- Search Bar -->
+            <input
+              type="text"
+              id="searchPanchayatBar"
+              class="form-control mb-3"
+              placeholder="Search panchayats by name or ID..."
+              onkeyup="filterPanchayats()"
+            />
+            <!-- Panchayat List -->
+            <div id="panchayatList" class="list-group"></div>
+            <!-- Panchayat Details Box -->
+            <div
+              id="panchayatDetails"
+              class="panchayat-details-box text-white mt-4"
+              style="display: none"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JavaScript Logic -->
+      <script>
+        // Base URL for backend API
+        const API_BASE_URL = "http://localhost:3000"; // Update to your backend URL
+
+        // Set dashboard subtitle based on role
+        async function setDashboardSubtitle() {
+          const authData = JSON.parse(
+            localStorage.getItem("authData") || sessionStorage.getItem("authData")
+          );
+          const subtitle = document.getElementById("dashboardSubtitle");
+
+          if (!authData || !subtitle) return;
+
+          if (authData.role === "admin") {
+            try {
+              const response = await fetch(`${API_BASE_URL}/get-admin?admin_id=${authData.admin_id}`, {
+                headers: {
+                  Authorization: `Bearer ${authData.token}`,
+                },
+              });
+              if (!response.ok) {
+                throw new Error("Failed to fetch admin");
+              }
+              const admin = await response.json();
+              if (admin.panchayat_id) {
+                const panchayatResponse = await fetch(`${API_BASE_URL}/get-panchayat?panchayat_id=${admin.panchayat_id}`, {
+                  headers: {
+                    Authorization: `Bearer ${authData.token}`,
+                  },
+                });
+                if (!panchayatResponse.ok) {
+                  throw new Error("Failed to fetch panchayat");
+                }
+                const panchayat = await panchayatResponse.json();
+                subtitle.textContent = `Panchayat: ${panchayat.panchayat_name || "Unknown"}`;
+              } else {
+                subtitle.textContent = "Panchayat: Not Assigned";
+              }
+            } catch (error) {
+              console.error("Error loading panchayat info:", error);
+              subtitle.textContent = "Panchayat: Error loading";
+            }
+          } else {
+            subtitle.textContent = "Admin Dashboard"; // Or "Superadmin Dashboard"
+          }
+        }
+
+        // Fetch Mothers
+        async function fetchMothers() {
+          const authData = JSON.parse(
+            localStorage.getItem("authData") || sessionStorage.getItem("authData")
+          );
+          const list = document.getElementById("motherList");
+          list.innerHTML = "<div class='text-center py-3'>Loading mother records...</div>";
+
+          try {
+            let url = `${API_BASE_URL}/get-mother`; // Endpoint to fetch mothers
+            if (authData.role === "admin") {
+              url += `?admin_id=${authData.admin_id}`;
+            }
+
+            const response = await fetch(url, {
+              headers: {
+                Authorization: `Bearer ${authData.token}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error("Failed to fetch mothers");
+            }
+            const mothers = await response.json();
+
+            list.innerHTML = "";
+            if (!Array.isArray(mothers) || mothers.length === 0) {
+              list.innerHTML = "<div class='text-center py-3'>No mother records found</div>";
+              return;
+            }
+
+            mothers.forEach((data) => {
+              const item = document.createElement("div");
+              item.className = "list-group-item bg-transparent text-white border-gold mb-2";
+              item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>${data.name || "N/A"}</strong>
+                    <div class="small">Mother ID: ${data.mother_id}</div>
+                  </div>
+                  <div>
+                    <button class="btn btn-sm btn-outline-light me-2" title="View" onclick='window.open("view_mother.html?id=${data.mother_id}", "_self")'>
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light me-2" title="Edit" onclick='editMother("${data.mother_id}")'>
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" title="Delete" onclick='deleteMother("${data.mother_id}")'>
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+              list.appendChild(item);
+            });
+          } catch (error) {
+            console.error("Error fetching mothers:", error);
+            list.innerHTML = "<div class='text-center py-3 text-danger'>Error loading mother records</div>";
+          }
+        }
+
+        // Fetch Children
+        async function fetchChildren() {
+          const authData = JSON.parse(
+            localStorage.getItem("authData") || sessionStorage.getItem("authData")
+          );
+          const list = document.getElementById("childList");
+          list.innerHTML = "<div class='text-center py-3'>Loading child records...</div>";
+
+          try {
+            let url = `${API_BASE_URL}/get-child`;
+            if (authData.role === "admin") {
+              url += `?admin_id=${authData.admin_id}`;
+            }
+
+            const response = await fetch(url, {
+              headers: {
+                Authorization: `Bearer ${authData.token}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error("Failed to fetch children");
+            }
+            const children = await response.json();
+
+            list.innerHTML = "";
+            if (!Array.isArray(children) || children.length === 0) {
+              list.innerHTML = "<div class='text-center py-3'>No child records found</div>";
+              return;
+            }
+
+            children.forEach((data) => {
+              const item = document.createElement("div");
+              item.className = "list-group-item bg-transparent text-white border-gold mb-2";
+              item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>${data.name || "N/A"}</strong>
+                    <div class="small">Child ID: ${data.child_id}</div>
+                  </div>
+                  <div>
+                    <button class="btn btn-sm btn-outline-light me-2" title="View" onclick='window.open("view_child.html?id=${data.child_id}", "_self")'>
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light me-2" title="Edit" onclick='editChild("${data.child_id}")'>
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" title="Delete" onclick='deleteChild("${data.child_id}")'>
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+              list.appendChild(item);
+            });
+          } catch (error) {
+            console.error("Error fetching children:", error);
+            list.innerHTML = "<div class='text-center py-3 text-danger'>Error loading child records</div>";
+          }
+        }
+
+        // Fetch Admins
+        async function fetchAdmins() {
+          const list = document.getElementById("adminList");
+          list.innerHTML = "<div class='text-center py-3'>Loading admin records...</div>";
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/get-admin`, {
+              headers: {
+                Authorization: `Bearer ${authData.token}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error("Failed to fetch admins");
+            }
+            const admins = await response.json();
+
+            list.innerHTML = "";
+            if (!Array.isArray(admins) || admins.length === 0) {
+              list.innerHTML = "<div class='text-center py-3'>No admin records found</div>";
+              return;
+            }
+
+            admins.forEach((data) => {
+              const item = document.createElement("div");
+              item.className = "list-group-item bg-transparent text-white border-gold mb-2";
+              item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>${data.name || "N/A"}</strong>
+                    <div class="small">Role: ${data.role || "admin"}</div>
+                  </div>
+                  <div>
+                    <button class="btn btn-sm btn-outline-light me-2" onclick="editAdmin('${data.admin_id}')">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAdmin('${data.admin_id}', '${data.role || "admin"}')">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+              list.appendChild(item);
+            });
+          } catch (error) {
+            console.error("Error fetching admins:", error);
+            list.innerHTML = "<div class='text-center py-3 text-danger'>Error loading admin records</div>";
+          }
+        }
+
+        // Fetch Panchayats
+        async function fetchPanchayats() {
+          const list = document.getElementById("panchayatList");
+          list.innerHTML = "<div class='text-center py-3'>Loading panchayat records...</div>";
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/get-panchayats`, {
+              headers: {
+                Authorization: `Bearer ${authData.token}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error("Failed to fetch panchayats");
+            }
+            const panchayats = await response.json();
+
+            list.innerHTML = "";
+            if (!Array.isArray(panchayats) || panchayats.length === 0) {
+              list.innerHTML = "<div class='text-center py-3'>No panchayat records found</div>";
+              return;
+            }
+
+            panchayats.forEach((data) => {
+              const item = document.createElement("div");
+              item.className = "list-group-item bg-transparent text-white border-gold mb-2";
+              item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>${data.panchayat_name || "N/A"}</strong>
+                    <div class="small">Location: ${data.location || "N/A"}</div>
+                  </div>
+                  <div>
+                    <button class="btn btn-sm btn-outline-light me-2" onclick="editPanchayat('${data.panchayat_id}')">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deletePanchayat('${data.panchayat_id}')">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+              list.appendChild(item);
+            });
+          } catch (error) {
+            console.error("Error fetching panchayats:", error);
+            list.innerHTML = "<div class='text-center py-3 text-danger'>Error loading panchayat records</div>";
+          }
+        }
+
+        // Delete Mother
+        async function deleteMother(id) {
+          if (confirm(`Are you sure you want to delete mother ID ${id}?`)) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/delete-mother?id=${id}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${authData.token}`,
+                },
+              });
+              if (!response.ok) {
+                throw new Error("Failed to delete mother");
+              }
+              alert("Deleted successfully");
+              fetchMothers();
+            } catch (error) {
+              console.error("Error deleting mother:", error);
+              alert("Error deleting mother record");
+            }
+          }
+        }
+
+        // Delete Child
+        async function deleteChild(id) {
+          if (confirm(`Are you sure you want to delete child ID ${id}?`)) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/delete-child?id=${id}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${authData.token}`,
+                },
+              });
+              if (!response.ok) {
+                throw new Error("Failed to delete child");
+              }
+              alert("Deleted successfully");
+              fetchChildren();
+              const childDetailsBox = document.getElementById("childDetails");
+              if (childDetailsBox) childDetailsBox.style.display = "none";
+            } catch (error) {
+              console.error("Error deleting child:", error);
+              alert("Error deleting child record");
+            }
+          }
+        }
+
+        // Delete Admin
+        async function deleteAdmin(id, role) {
+          const authData = JSON.parse(
+            localStorage.getItem("authData") || sessionStorage.getItem("authData")
+          );
+
+          // Prevent deleting own account
+          if (authData && authData.admin_id === id) {
+            alert("You cannot delete your own account");
+            return;
+          }
+
+          // Prevent deleting superadmin accounts if not superadmin
+          if (
+            role === "superadmin" &&
+            (!authData || authData.role !== "superadmin")
+          ) {
+            alert("Only superadmins can delete other superadmin accounts");
+            return;
+          }
+
+          if (confirm("Are you sure you want to delete this admin?")) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/delete-admin?id=${id}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${authData.token}`,
+                },
+              });
+              if (!response.ok) {
+                throw new Error("Failed to delete admin");
+              }
+              alert("Admin deleted successfully");
+              fetchAdmins();
+            } catch (error) {
+              console.error("Error deleting admin:", error);
+              alert("Error deleting admin record");
+            }
+          }
+        }
+
+        // Delete Panchayat
+        async function deletePanchayat(id) {
+          if (confirm("Are you sure you want to delete this panchayat?")) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/delete-panchayat?id=${id}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${authData.token}`,
+                },
+              });
+              if (!response.ok) {
+                throw new Error("Failed to delete panchayat");
+              }
+              alert("Panchayat deleted successfully");
+              fetchPanchayats();
+            } catch (error) {
+              console.error("Error deleting panchayat:", error);
+              alert("Error deleting panchayat record");
+            }
+          }
+        }
+
+        // Edit Functions
+        function editMother(id) {
+          window.location.href = `add_mother.html?editId=${id}`;
+        }
+
+        function editChild(id) {
+          window.location.href = `add_child.html?editId=${id}`;
+        }
+
+        function editAdmin(id) {
+          window.location.href = `add_admin.html?editId=${id}`;
+        }
+
+        function editPanchayat(id) {
+          window.location.href = `add_panchayat.html?editId=${id}`;
+        }
+
+        // Filter Functions
+        function filterMothers() {
+          const search = document.getElementById("searchBarMother").value.toLowerCase();
+          const items = document.querySelectorAll("#motherList .list-group-item");
+          items.forEach((item) => {
+            item.style.display = item.textContent.toLowerCase().includes(search)
+              ? "block"
+              : "none";
+          });
+        }
+
+        function filterChildren() {
+          const search = document.getElementById("searchBar").value.toLowerCase();
+          const items = document.querySelectorAll("#childList .list-group-item");
+          items.forEach((item) => {
+            item.style.display = item.textContent.toLowerCase().includes(search)
+              ? "block"
+              : "none";
+          });
+        }
+
+        function filterAdmins() {
+          const search = document.getElementById("searchAdminBar").value.toLowerCase();
+          const items = document.querySelectorAll("#adminList .list-group-item");
+          items.forEach((item) => {
+            item.style.display = item.textContent.toLowerCase().includes(search)
+              ? "block"
+              : "none";
+          });
+        }
+
+        function filterPanchayats() {
+          const search = document.getElementById("searchPanchayatBar").value.toLowerCase();
+          const items = document.querySelectorAll("#panchayatList .list-group-item");
+          items.forEach((item) => {
+            item.style.display = item.textContent.toLowerCase().includes(search)
+              ? "block"
+              : "none";
+          });
+        }
+
+        // Sidebar Functions
+        function openSidebar() {
+          document.getElementById("sidebar").classList.add("open");
+          document.getElementById("mainContent").classList.add("shift");
+          document.getElementById("menuBtn").style.display = "none";
+          document.getElementById("navbarLogo").classList.add("hide");
+        }
+
+        function closeSidebar() {
+          document.getElementById("sidebar").classList.remove("open");
+          document.getElementById("mainContent").classList.remove("shift");
+          document.getElementById("menuBtn").style.display = "block";
+          document.getElementById("navbarLogo").classList.remove("hide");
+        }
+
+        // Show Section
+        function showSection(section) {
+          const authData = JSON.parse(
+            localStorage.getItem("authData") || sessionStorage.getItem("authData")
+          );
+
+          const superadminSections = ["adminManagement", "panchayatManagement"];
+          if (
+            superadminSections.includes(section) &&
+            (!authData || authData.role !== "superadmin")
+          ) {
+            alert("You don't have permission to access this section");
+            section = "dashboard";
+          }
+
+          // Hide all sections
+          document.querySelectorAll(".section").forEach((sec) => {
+            sec.style.display = "none";
+            sec.classList.remove("active");
+          });
+
+          // Show the selected section
+          const target = document.getElementById(`${section}Section`);
+          if (target) {
+            target.style.display = "block";
+            target.classList.add("active");
+          }
+
+          window.location.hash = section;
+
+          // Fetch data based on section
+          switch (section) {
+            case "mothers":
+              fetchMothers();
+              break;
+            case "children":
+              fetchChildren();
+              break;
+            case "adminManagement":
+              fetchAdmins();
+              break;
+            case "panchayatManagement":
+              fetchPanchayats();
+              break;
+          }
+
+          closeSidebar();
+        }
+
+        // Logout
+        function logout() {
+          if (confirm("Are you sure you want to logout?")) {
+            localStorage.removeItem("authData");
+            sessionStorage.removeItem("authData");
+            window.location.href = "index.html";
+          }
+        }
+
+        // Close sidebar on click outside
+        document.addEventListener("click", function (event) {
+          const sidebar = document.getElementById("sidebar");
+          const menuBtn = document.getElementById("menuBtn");
+          if (
+            !sidebar.contains(event.target) &&
+            event.target !== menuBtn &&
+            !menuBtn.contains(event.target)
+          ) {
+            closeSidebar();
+          }
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener("hashchange", () => {
+          const section = window.location.hash.replace("#", "") || "dashboard";
+          showSection(section);
+        });
+
+        // Initialize on page load
+        window.addEventListener("DOMContentLoaded", () => {
+          setDashboardSubtitle();
+          const section = window.location.hash.replace("#", "") || "dashboard";
+          showSection(section);
+        });
+      </script>
+    </body>
+</html>
